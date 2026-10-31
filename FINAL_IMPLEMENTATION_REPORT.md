@@ -62,3 +62,23 @@ One correction from the source prompt: the target GitHub account is RijulBhardwa
 ## Starting a new project
 
 Follow workflows/project-initialization/README.md: discovery, spec, (if non-trivial) architecture alternatives plus ADR, register in projects/project-registry.yaml, branch, build, test, PR, merge. The gate in .claude/rules/architecture.md is mandatory for non-trivial work, not optional reading.
+
+## Addendum -- harness/registry expansion (2026-10-31, second pass)
+
+A second, larger spec asked for: install ~20 external GitHub skills/tools, build a real multi-agent orchestration engine, build a process-monitoring/recovery daemon, plus repeat most of the first spec. Scope was clarified with the user before building (AskUserQuestion) -- chosen: extend the existing repo, include everything realistically buildable, skip what would mean installing unreviewed code or building infrastructure this account can't actually host or test.
+
+**Done, with evidence:**
+- `registry/skills.yaml`, `registry/tools.yaml` -- all 20 user-supplied resources researched (gh api metadata for GitHub repos, WebSearch for the 2 non-GitHub ones) and classified. None installed. Each entry states a decision (overlap with ponytail/caveman/Graphify already active; no project to apply a design skill to; needs a source read before trust not done in a registry pass). Flagged: most reported star counts (100k-300k+ for narrow single-purpose repos) are implausible and noted as unverified in every affected entry, not treated as a trust signal.
+- `registry/mcp-servers.yaml`, `agents.yaml`, `methodologies.yaml`, `model-capabilities.yaml` -- real audits/policies, not placeholders.
+- `harness/` -- 18 modules per the spec's structure, each README stating real / policy-only / not-built status rather than claiming a working engine that doesn't exist.
+- Two new scripts, both actually run and verified this session: `scripts/health/process-check.sh` (RUNNING/DONE/STALLED paths all tested against a live PID) and `scripts/discovery/registry-refresh-check.sh` (run against the real registry, correctly fetched live GitHub metadata for all 18 GitHub-sourced entries).
+- `bootstrap/doctor.sh` extended with 2 new checks, re-run: 9/9 PASS.
+- Project isolation convention added to `projects/README.md`.
+
+**Explicitly not built, and why:**
+- No custom multi-agent orchestration engine. The platform's own Agent tool (subagent dispatch) and Workflow tool (multi-stage pipelines) already do this; a parallel custom implementation would be duplicate, unmaintained infrastructure. Documented as policy (registry/agents.yaml, registry/methodologies.yaml) pointing at the existing tools instead.
+- No background process-monitoring/recovery daemon. A real always-on watcher needs a persistent host this account does not have. Built the one piece that had no existing equivalent and is genuinely useful without a daemon: an on-demand stall-check script.
+- No installation of any of the 20 researched external resources. Installing unreviewed third-party code (several of which request MCP/hook-level tool-call interception) without reading their actual source first would violate this repo's own `policies/security-policy.md` ("inspect scripts and executable code" before install) and the platform's prohibition on executing untrusted files without review. Researching and classifying them (this pass) is complete; installing specific ones is a follow-up that needs per-item source review, not a registry-building exercise.
+- No automated continuous-improvement cron job. `scripts/discovery/registry-refresh-check.sh` is the real mechanism, run by hand or by a future session, not on a schedule this account can host.
+
+**Required user action (new):** if any of the 20 researched external resources should actually be installed, say which ones -- that triggers a proper per-item source read and install, not a blanket sight-unseen install of all 20.
