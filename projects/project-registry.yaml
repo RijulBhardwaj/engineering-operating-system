@@ -17,7 +17,7 @@ projects:
 
   - project_id: fitness-intelligence-platform
     name: "Fitness Intelligence Platform"
-    repo: "local, not yet pushed (C:/Coding Projects/fitness-intelligence-platform)"
+    repo: "https://github.com/RijulBhardwaj/fitness-intelligence-platform"
     default_branch: main
     current_branch: main
     project_type: full-stack-ai-saas
