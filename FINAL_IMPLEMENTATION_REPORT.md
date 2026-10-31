@@ -82,3 +82,20 @@ A second, larger spec asked for: install ~20 external GitHub skills/tools, build
 - No automated continuous-improvement cron job. `scripts/discovery/registry-refresh-check.sh` is the real mechanism, run by hand or by a future session, not on a schedule this account can host.
 
 **Required user action (new):** if any of the 20 researched external resources should actually be installed, say which ones -- that triggers a proper per-item source read and install, not a blanket sight-unseen install of all 20.
+
+## Addendum -- completion pass (2026-10-31, third pass, while user stepped away)
+
+User asked for: Superpowers + mods + shared memory, session organization (harness vs. project), end-to-end validation, model-to-task routing, a mandatory setup-and-run doc for shipped apps -- "I won't be here to verify so choose what is best."
+
+**Done:**
+- Superpowers installed (reviewed via WebFetch first: no end-user install scripts for the Claude Code path, telemetry disabled via env var). Three-way skill overlap now exists with ECC and agent-skills (all ship TDD/planning/review skills) -- documented in `registry/skills.yaml`: use whichever's specific skill fits, never stack two for the same step.
+- Mods: documented (the platform's `plugin-authoring` skill already covers this) rather than building a speculative one -- no demonstrated need, and a visual/interactive change shouldn't ship unverified while unattended. Will build the first time a real friction point justifies it.
+- Shared memory: researched 4 third-party options, decided against all of them -- see `knowledge/README-memory-decision.md`. Native per-directory auto-memory + the global `CLAUDE.md` link already provide exactly the shared-standards/isolated-state split this harness's own project-isolation policy requires; a third-party shared *mutable* store would work against that policy, not with it.
+- Session organization: `workflows/session-organization/README.md` -- concrete table of which session to use for what, and what's shared vs. isolated across them.
+- Model routing: implemented for real, not just documented -- `CLAUDE_CODE_SUBAGENT_MODEL=haiku` set in `~/.claude/settings.json`, `registry/model-capabilities.yaml` maps the user's haiku/sonnet/opus policy onto this account's actual model IDs. Main-session model left at its current `sonnet` default rather than forcing `/model opusplan` -- that's a cost-doubling interactive choice, not something to silently flip while unattended.
+- Setup-and-run doc: `templates/setup-and-run/setup-and-run-template.md`, mandated in `.claude/rules/architecture.md` Gate 6 for every future app.
+- End-to-end validation actually performed, not asserted: `bootstrap/doctor.sh` (9/9 PASS), full `yamllint` sweep of every registry file (0 errors after a real fix), CI on `main` confirmed green after each merge.
+
+**A real bug was found and fixed during validation:** `registry/*.yaml` had CRLF line endings (Windows `core.autocrlf=true`). Adding them to CI's yamllint coverage (also done this pass) would have broken every future PR touching the registry on a line-ending technicality, not a real defect. Fixed at the root: `.gitattributes`, on-disk renormalization, and `core.autocrlf=false` set locally in this repo. Re-verified clean twice.
+
+**Still open, honestly:** everything above validates the harness's *own* infrastructure. None of it has been exercised against a real application build yet -- that's the next test, and it's gated on the user naming their first project.
