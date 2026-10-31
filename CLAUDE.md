@@ -39,7 +39,7 @@ Personas in [`.claude/agents/`](.claude/agents/). Invoke the minimum set the tas
 
 ## Skills / MCP / tools
 
-See [`.claude/skills/inventory.md`](.claude/skills/inventory.md) for what's actually discovered-and-verified on this account, as of the last audit. Use what's relevant; don't call a tool because it exists.
+See [`.claude/skills/inventory.md`](.claude/skills/inventory.md) for what's actually discovered-and-verified on this account, as of the last audit. Use what's relevant; don't call a tool because it exists. Install authorization: see [`policies/skill-installation-policy.md`](policies/skill-installation-policy.md) -- installing what an active project actually needs doesn't require asking first; a newly-discovered candidate with no active project need does.
 
 ## Harness and registries
 
