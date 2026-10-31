@@ -1,7 +1,7 @@
 # Final Implementation Report -- Engineering Operating System
 
 **Date:** 2026-10-31
-**Repo:** https://github.com/RijulBhardwaj/engineering-operating-system (private)
+**Repo:** https://github.com/RijulBhardwaj/engineering-operating-system (public, protected main)
 
 ## Executive summary
 
@@ -14,7 +14,7 @@ One correction from the source prompt: the target GitHub account is RijulBhardwa
 | ID | Requirement | Status | Evidence |
 |---|---|---|---|
 | OS-01 | GitHub repository | DONE | gh repo create succeeded: github.com/RijulBhardwaj/engineering-operating-system |
-| OS-02 | Main branch | DONE, protection partial | git push -u origin main succeeded. Branch protection API call returned 403 -- GitHub requires a paid plan for branch protection on a private repo. Not fixable without upgrading or making the repo public. |
+| OS-02 | Main branch | DONE | git push -u origin main succeeded. Repo made public at user request; branch protection applied to main (1 required approval, enforce_admins, no force-push, no deletion -- verified via API response). |
 | OS-03 | Branch strategy | DONE | .claude/rules/git-workflow.md, policies/branch-protection.md, documented as ADR-0001 (trunk-based, no develop branch -- justified for a solo repo) |
 | OS-04 | PR workflow | DONE | .github/PULL_REQUEST_TEMPLATE.md, 3 issue templates, CODEOWNERS |
 | OS-05 | CI/CD | PARTIAL | 3 real workflows (validate: shellcheck+yamllint, security: gitleaks, dependency-review). Not built: test/release/documentation/repository-health workflows -- no application code or release artifact exists yet to drive them. |
@@ -40,7 +40,7 @@ One correction from the source prompt: the target GitHub account is RijulBhardwa
 
 ## Known limitations (stated plainly)
 
-1. Branch protection on main is not applied -- GitHub free tier blocks it on a private repo. Options: make the repo public, or upgrade to Pro. Left unresolved, flagged rather than silently skipped.
+1. (Resolved) Branch protection was initially blocked by the free-tier private-repo limit; repo made public at user request, protection applied to main.
 2. CI workflows are thinner than the original 7-workflow list -- no application code exists yet to make test/release/doc-validation/repo-health workflows real rather than theater. Add them when a real project needs that automation.
 3. No audit-event auto-writer -- schema exists, hook wiring doesn't. Adding a PostToolUse/Stop hook is a machine-local settings change that should be reviewed before installing, not done silently.
 4. sync.ps1 not written -- sync.sh covers this machine via git-bash. Add if a pure-PowerShell machine needs it.
@@ -50,7 +50,6 @@ One correction from the source prompt: the target GitHub account is RijulBhardwa
 ## Required user actions
 
 - Rotate or relocate the GEMINI_API_KEY found in plaintext in ~/.claude/settings.json -- not fixed here, flagged for you to handle.
-- Decide on branch protection: accept the free-tier gap, make the repo public, or upgrade to Pro.
 - Confirm or correct the one unverified claim in knowledge/profile/engineering-profile.md (ECE background) so it can state it as fact instead of flagging it.
 
 ## Using this on a new machine
