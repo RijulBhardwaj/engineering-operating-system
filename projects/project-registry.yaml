@@ -14,3 +14,16 @@ projects:
     relevant_skills: [graphify]
     last_checkpoint: "2026-10-31: assess command + intake hardening, console encoding fix, interactive CLI menu"
     last_validation_status: unknown -- not re-run during this bootstrap
+
+  - project_id: fitness-intelligence-platform
+    name: "Fitness Intelligence Platform"
+    repo: "local, not yet pushed (C:/Coding Projects/fitness-intelligence-platform)"
+    default_branch: main
+    current_branch: main
+    project_type: full-stack-ai-saas
+    technology_stack: [python, fastapi, nextjs, postgresql, redis]
+    status: planned
+    current_milestone: "Phase 1 -- discovery, dataset/model research, architecture evaluation (not started)"
+    relevant_skills: [graphify, agent-skills, superpowers, floorplan]
+    last_checkpoint: "2026-11-01: project registered, scope note recorded, session started"
+    last_validation_status: not-applicable-yet
