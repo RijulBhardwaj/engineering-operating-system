@@ -1,0 +1,16 @@
+# Project registry -- one entry per actively-maintained project.
+# Schema: schemas/project.schema.json
+
+projects:
+  - project_id: 12-dimension-harness
+    name: "12_Dimension_Harness"
+    repo: "local (not yet pushed to RijulBhardwaj/12_Dimension_Harness on GitHub)"
+    default_branch: main
+    current_branch: harness-missing-tools-interactive-cli
+    project_type: cli-tool
+    technology_stack: [python]
+    status: in-progress
+    current_milestone: "missing tools + interactive CLI menu"
+    relevant_skills: [graphify]
+    last_checkpoint: "2026-10-31: assess command + intake hardening, console encoding fix, interactive CLI menu"
+    last_validation_status: unknown -- not re-run during this bootstrap

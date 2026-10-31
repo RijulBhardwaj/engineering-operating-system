@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent",
+  "type": "object",
+  "required": ["name", "purpose", "invoke_when"],
+  "properties": {
+    "name": {"type": "string"},
+    "purpose": {"type": "string"},
+    "invoke_when": {"type": "string"},
+    "do_not_invoke_for": {"type": "string"},
+    "inputs": {"type": "array", "items": {"type": "string"}},
+    "outputs": {"type": "array", "items": {"type": "string"}},
+    "must_follow": {"type": "array", "items": {"type": "string"}}
+  }
+}

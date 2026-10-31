@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AuditEvent",
+  "type": "object",
+  "required": ["timestamp", "actor", "event_type", "status"],
+  "properties": {
+    "timestamp": {"type": "string", "format": "date-time"},
+    "session_id": {"type": "string"},
+    "project_id": {"type": "string"},
+    "actor": {"type": "string"},
+    "event_type": {"type": "string"},
+    "resource": {"type": "string"},
+    "status": {"enum": ["started", "passed", "failed", "blocked"]},
+    "branch": {"type": "string"},
+    "commit": {"type": "string"},
+    "details": {"type": "object"},
+    "evidence": {"type": "array"}
+  }
+}

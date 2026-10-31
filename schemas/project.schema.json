@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Project",
+  "type": "object",
+  "required": ["project_id", "name", "status"],
+  "properties": {
+    "project_id": {"type": "string"},
+    "name": {"type": "string"},
+    "repo": {"type": "string"},
+    "default_branch": {"type": "string"},
+    "current_branch": {"type": "string"},
+    "project_type": {"type": "string"},
+    "technology_stack": {"type": "array", "items": {"type": "string"}},
+    "status": {"enum": ["planned", "in-progress", "paused", "complete", "archived"]},
+    "current_milestone": {"type": "string"},
+    "relevant_skills": {"type": "array", "items": {"type": "string"}},
+    "last_checkpoint": {"type": "string"},
+    "last_validation_status": {"type": "string"}
+  }
+}

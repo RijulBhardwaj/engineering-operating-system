@@ -1,0 +1,22 @@
+name: validate
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ShellCheck bootstrap scripts
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          shellcheck bootstrap/*.sh scripts/**/*.sh 2>/dev/null || shellcheck bootstrap/*.sh
+  yaml-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate YAML syntax
+        run: |
+          pip install --quiet yamllint
+          yamllint -d relaxed projects/project-registry.yaml .github/workflows/*.yml
