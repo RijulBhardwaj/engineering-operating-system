@@ -11,3 +11,8 @@
 - Repo made public at user's explicit request (`gh repo edit --visibility public`) to unlock branch protection on GitHub's free tier.
 - Branch protection applied to `main`: enforce_admins=true, required_pull_request_reviews (1 approval), allow_force_pushes=false, allow_deletions=false. First PUT attempt failed (422: `-f` sent `"null"`/`"0"` as strings, not JSON null/int) -- fixed by sending a real JSON payload via `--input`.
 - No LICENSE added despite now being public -- default is "all rights reserved," which is fine for a personal config repo nobody else should fork yet. Add one (MIT/Apache-2.0) if the intent is for others to actually use this.
+
+## Update 2 -- 2026-10-31
+
+- Removed .github/workflows/dependency-review.yml: it failed every run with "Dependency review is not supported on this repository... ensure Dependency graph is enabled" -- this repo has no package manifests (no package.json/requirements.txt/etc.), so the action has nothing to review and a dependency graph won't change that. Enabled vulnerability-alerts anyway (gh api repos/.../vulnerability-alerts -X PUT) in case a manifest is added later, but dropped the workflow until there's an actual dependency to check.
+- Fixed shellcheck failures in bootstrap/doctor.sh: SC2015 (A && B || C is not if/then/else) by rewriting as explicit if/then/else; SC2088 (tilde in quotes doesn't expand) by renaming a status label from "~/.claude exists" to "CLAUDE_DIR exists" -- it was a display string, not an actual path expansion, but shellcheck can't tell the difference and the false positive was failing CI.
