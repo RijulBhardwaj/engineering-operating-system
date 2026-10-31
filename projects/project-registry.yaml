@@ -17,13 +17,13 @@ projects:
 
   - project_id: fitness-intelligence-platform
     name: "Fitness Intelligence Platform"
-    repo: "local, not yet pushed (C:/Coding Projects/fitness-intelligence-platform)"
+    repo: "https://github.com/RijulBhardwaj/fitness-intelligence-platform"
     default_branch: main
     current_branch: main
     project_type: full-stack-ai-saas
     technology_stack: [python, fastapi, nextjs, postgresql, redis]
-    status: planned
-    current_milestone: "Phase 1 -- discovery, dataset/model research, architecture evaluation (not started)"
+    status: in-progress
+    current_milestone: "Phase 2 docs/ADRs/schema/benchmark-harness complete (Cloudflare Workers + Workers AI + Neon/pgvector decision); real implementation blocked on user provisioning Cloudflare + Neon accounts and running the model benchmark"
     relevant_skills: [graphify, agent-skills, superpowers, floorplan]
-    last_checkpoint: "2026-11-01: project registered, scope note recorded, session started"
+    last_checkpoint: "2026-11-01: 7 ADRs (ADR-0004 Proposed), DB schema, inference/embedding adapter interfaces, 11 architecture docs, benchmark methodology+harness scaffold written to fitness-intelligence-platform repo (commit 921ea0d). See docs/SESSION_STATE.md for hard blockers and open questions (Q1/Q2/Q8/Q10 unresolved). No implementation beyond schema/interfaces/harness scaffolding; no code deployed, no benchmark run (no live Cloudflare/Neon access this session)."
     last_validation_status: not-applicable-yet
