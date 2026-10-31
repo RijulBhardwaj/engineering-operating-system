@@ -38,6 +38,6 @@ Business requirement, PRD, spec, architecture, ADR, task, code, test, PR, releas
 3. Implementation plan and acceptance criteria ready.
 4. Tests pass.
 5. Security/quality/docs satisfied.
-6. Deploy and post-deploy checks pass.
+6. Deploy and post-deploy checks pass. Mandatory deliverable: a filled-in templates/setup-and-run/setup-and-run-template.md in the project's own repo -- exact commands to set up, run, test, deploy, and verify it's actually running. Not optional, not generic placeholder text -- the real commands that were actually run for this project.
 
 Automate what can be automated (CI); human sign-off on consequential/irreversible decisions.
