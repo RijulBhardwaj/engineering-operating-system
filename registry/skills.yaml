@@ -1,0 +1,173 @@
+# Skill registry. Schema: schemas/registry-entry.schema.json
+# last_reviewed dates below are when THIS registry was built/updated, not when the upstream project last shipped.
+skills:
+  - id: graphify
+    name: Graphify
+    description: Turns a codebase (code, docs, SQL schemas, configs, PDFs) into a queryable knowledge graph via local deterministic AST parsing. Claude Code /graphify skill.
+    category: Claude Skill
+    source: https://github.com/Graphify-Labs/graphify
+    installation_status: installed
+    installation_location: ~/.claude/skills/graphify
+    compatible: true
+    lifecycle_stages: [architecture, code-review, maintenance]
+    relevant_agents: [software-architect, code-reviewer]
+    last_reviewed: "2026-10-31"
+    security_status: "In active use this session already; no new install action taken. Star count reported by GitHub API (139744) is implausible for this repo's visibility -- treated as unverified, not as a trust signal."
+    notes: Already installed and in use for this account; not a new installation.
+
+  - id: ecc
+    name: Everything Claude Code (ECC)
+    description: Large plugin bundle, roughly 400 skills/agents/commands covering reviewers per language, build-resolvers, TDD workflows, orchestration, ADR authoring, git-workflow, security-review.
+    category: Claude Plugin
+    source: https://github.com/affaan-m/ecc
+    installation_status: installed
+    installation_location: Claude plugin marketplace (ecc@ecc)
+    compatible: true
+    lifecycle_stages: [requirements, architecture, coding, code-review, testing, security, deployment, documentation]
+    relevant_agents: [all]
+    last_reviewed: "2026-10-31"
+    security_status: "Already installed and enabled on this account. Star count reported (293669) is implausible -- unverified, not a trust signal. No fresh audit of all ~400 bundled items was performed, only of the subset this session actually invoked."
+
+  - id: andrej-karpathy-skills
+    name: Andrej Karpathy Skills
+    description: A single CLAUDE.md file encoding Karpathy's observations on LLM coding pitfalls -- not a skill in the SKILL.md sense, just a prompt document.
+    category: Documentation Resource
+    source: https://github.com/multica-ai/andrej-karpathy-skills
+    installation_status: not-installed
+    compatible: true
+    lifecycle_stages: [coding]
+    last_reviewed: "2026-10-31"
+    security_status: "Low risk (plain markdown, no executable code). Star count reported (227149) is implausible for a single-file repo -- unverified."
+    decision: "Not installed as a separate skill. Overlaps with .claude/rules/coding-standards.md and engineering-principles.md already in this repo."
+
+  - id: chisle
+    name: Chisle
+    description: Cuts agent token bill on three axes -- terse prose, YAGNI-first code, tool-output compression. Overlaps with ponytail and caveman, already installed.
+    category: Claude Plugin
+    source: https://github.com/JayPokale/Chisle
+    installation_status: not-installed
+    compatible: true
+    lifecycle_stages: [coding]
+    last_reviewed: "2026-10-31"
+    security_status: "729 stars, pushed 2026-10-24 -- plausible, actively maintained."
+    decision: "Not installed. Direct functional overlap with ponytail and caveman already active on this account."
+
+  - id: floorplan
+    name: Floorplan
+    description: Interactive, plain-English map of a codebase's architecture, drawn by Claude or Codex.
+    category: Claude Plugin
+    source: https://github.com/haydenschmitty/floorplan
+    installation_status: not-installed
+    compatible: true
+    lifecycle_stages: [architecture, onboarding]
+    last_reviewed: "2026-10-31"
+    security_status: "513 stars, pushed 2026-10-31 -- actively maintained, plausible count."
+    decision: "Candidate, not installed this pass. Partial overlap with Graphify but a different artifact (narrative map vs. queryable graph). Add when onboarding/handoff need justifies it."
+
+  - id: token-optimizer
+    name: Token Optimizer
+    description: Finds and fixes ghost tokens; targets context quality decay across compaction.
+    category: Claude Plugin
+    source: https://github.com/alexgreensh/token-optimizer
+    installation_status: not-installed
+    compatible: true
+    lifecycle_stages: [all]
+    last_reviewed: "2026-10-31"
+    security_status: "2816 stars, pushed 2026-10-31 -- actively maintained, plausible count."
+    decision: "Not installed. Overlaps with ponytail/caveman and this harness's own token-efficiency.md rule. No evidence of a measurable token-waste problem to justify adding it."
+
+  - id: addyosmani-agent-skills
+    name: Addy Osmani Agent Skills
+    description: Production-grade engineering skills for AI coding agents, from a credible, known web-performance engineer.
+    category: Claude Skill (collection)
+    source: https://github.com/addyosmani/agent-skills
+    installation_status: not-installed
+    compatible: true
+    lifecycle_stages: [coding, code-review, performance]
+    last_reviewed: "2026-10-31"
+    security_status: "112091 stars reported -- implausible, unverified. Pushed 2026-10-31, repo itself is live and maintained even if the star count is noise."
+    decision: "Candidate for future install -- author has a credible public track record, unlike most entries here. Not installed sight-unseen; needs a per-skill content read before adding, out of scope for this registry pass."
+
+  - id: ui-ux-pro-max
+    name: UI UX Pro Max
+    description: Design-intelligence skill for professional UI/UX across platforms.
+    category: Claude Skill
+    source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+    installation_status: not-installed
+    compatible: true
+    lifecycle_stages: [frontend, design]
+    last_reviewed: "2026-10-31"
+    security_status: "143211 stars reported -- implausible, unverified."
+    decision: "Not installed. No active frontend/design project on this account. Revisit when one exists."
+
+  - id: taste-skill
+    name: Taste Skill (tasteskill.dev)
+    description: Agent skill for frontend design taste -- art direction, reference images, browser-based self-check instead of generic AI-looking UI.
+    category: Claude Skill
+    source: https://github.com/leonxlnx/taste-skill
+    installation_status: not-installed
+    compatible: true
+    lifecycle_stages: [frontend, design]
+    last_reviewed: "2026-10-31"
+    security_status: "Star counts conflict across sources (8.3k-37.4k per third-party write-ups vs 106627 from gh api) -- all unverified. One review notes it can direct edits to any project file, same blast radius as any skill; verify scope before trusting it on a sensitive repo."
+    decision: "Not installed -- no active frontend project."
+
+  - id: awesome-claude-design
+    name: Awesome Claude Design
+    description: 68 ready-to-use DESIGN.md design-system inspirations; drop one in, scaffold a UI in one shot.
+    category: Design Reference
+    source: https://github.com/VoltAgent/awesome-claude-design
+    installation_status: not-installed
+    compatible: true
+    lifecycle_stages: [frontend, design]
+    last_reviewed: "2026-10-31"
+    security_status: "4274 stars, pushed 2026-06-20 -- plausible, maintained."
+    decision: "Reference-only candidate. Not executable code -- safe to pull a specific DESIGN.md on demand rather than vendoring all 68 speculatively."
+
+  - id: design-md-chrome
+    name: design-md-chrome
+    description: Chrome extension that extracts styles from any website and generates DESIGN.md files or design skills.
+    category: Browser Integration
+    source: https://github.com/bergside/design-md-chrome
+    installation_status: not-installed
+    compatible: false
+    lifecycle_stages: [frontend, design]
+    last_reviewed: "2026-10-31"
+    security_status: "3106 stars, pushed 2026-05-25 -- plausible. It's a Chrome extension the user installs in their own browser, not something this Claude Code harness installs or runs."
+    decision: "Not applicable to install from here -- end-user browser software, not a Claude skill/MCP/plugin."
+
+  - id: design-motion-principles
+    name: Design Motion Principles
+    description: Motion-design skill -- build or audit UI animation, distilled from named designers' published work.
+    category: Claude Skill
+    source: https://github.com/kylezantos/design-motion-principles
+    installation_status: not-installed
+    compatible: true
+    lifecycle_stages: [frontend, design]
+    last_reviewed: "2026-10-31"
+    security_status: "1466 stars, pushed 2026-05-30 -- plausible, moderately maintained."
+    decision: "Not installed -- no active frontend project. Legitimate, narrowly-scoped candidate when one exists."
+
+  - id: transitions-dev
+    name: transitions.dev
+    description: Copy-paste CSS transition snippet library, not a JS framework; companion Transitions Polish skill audits existing animation against its token scale.
+    category: Design Reference
+    source: "https://transitions.dev/ (agent skill at https://github.com/Jakubantalik/transitions.dev)"
+    installation_status: not-installed
+    compatible: true
+    lifecycle_stages: [frontend]
+    last_reviewed: "2026-10-31"
+    security_status: "514 stars / 24 forks per one secondary source, last push 2026-04-25 -- plausible and consistent, unlike most other entries here."
+    decision: "Not installed -- no active frontend project. Low-risk reference if one appears."
+
+  - id: anatomy
+    name: Anatomy
+    description: Agent skill for generating detailed isometric SVG illustrations of machines/systems, with optional WebGL/3D effects.
+    category: Claude Skill
+    source: https://github.com/wheresryan22/anatomy
+    installation_status: not-installed
+    compatible: true
+    lifecycle_stages: [documentation, illustration]
+    last_reviewed: "2026-10-31"
+    security_status: "23149 stars reported -- implausible, unverified. Pushed 2026-10-18 -- repo itself active."
+    decision: "Not installed. Niche illustration capability with no current demand on this account's active project."

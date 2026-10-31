@@ -41,6 +41,10 @@ Personas in [`.claude/agents/`](.claude/agents/). Invoke the minimum set the tas
 
 See [`.claude/skills/inventory.md`](.claude/skills/inventory.md) for what's actually discovered-and-verified on this account, as of the last audit. Use what's relevant; don't call a tool because it exists.
 
+## Harness and registries
+
+Reusable development/quality-engineering modules live in [`harness/`](harness/README.md) -- read its status table before assuming a module is a working engine; several are policy pointers to tools that already exist (platform Agent/Workflow tools, Graphify) rather than new software. Skill/tool/MCP/agent/methodology/model-tier decisions are in [`registry/`](registry/) -- check `last_reviewed` and `decision` fields before trusting an entry as current.
+
 ## Starting a new project
 
-Follow [`workflows/project-initialization/README.md`](workflows/project-initialization/README.md). Spec and architecture decisions (ADR) come before implementation for anything non-trivial — see `architecture.md`. Trivial fixes/typos don't need the full gate.
+Follow [`workflows/project-initialization/README.md`](workflows/project-initialization/README.md). Spec and architecture decisions (ADR) come before implementation for anything non-trivial — see `architecture.md`. Trivial fixes/typos don't need the full gate. Each project is isolated per [`projects/README.md`](projects/README.md)'s convention -- its own repo, branches, ADRs, secrets; only standards/templates/registries are shared from here.

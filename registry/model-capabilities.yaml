@@ -1,0 +1,16 @@
+# Model/effort selection policy. This is policy for choosing a model+effort for a task, not a live
+# capability probe -- Claude Code already exposes model selection via /model and session settings.
+model_policy:
+  low_complexity:
+    examples: [file discovery, simple edits, formatting, basic docs, mechanical renames]
+    guidance: "Cheapest capable model (e.g. Haiku-tier), low/no extended reasoning effort."
+  medium_complexity:
+    examples: [routine implementation, standard debugging, unit tests, small architecture changes]
+    guidance: "Balanced model (e.g. Sonnet-tier), medium reasoning effort."
+  high_complexity:
+    examples: [architecture design, security analysis, complex debugging, distributed systems, independent review]
+    guidance: "Strongest available reasoning model/effort for the task owner; a second, independent pass for review -- never the same pass that wrote the thing."
+  critical_complexity:
+    examples: [cross-system architecture, major security decisions, production incidents, critical infra changes]
+    guidance: "Strongest available model/effort, PLUS independent verification by a separate agent or session before acting. Human sign-off required for irreversible actions per .claude/rules/architecture.md Gate 6 and the platform's own safety rules -- this registry does not override those."
+  note: "This harness does not implement its own model-routing software. Model/effort choice is made per-task by whoever (human or agent) is driving the session, using this policy as the decision table, and set via the platform's existing /model, /effort, or per-agent model field in .claude/agents/*.md frontmatter where applicable."

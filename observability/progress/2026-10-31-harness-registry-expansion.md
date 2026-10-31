@@ -1,0 +1,8 @@
+# Checkpoint: harness/registry expansion -- 2026-10-31
+
+**Status:** complete for this pass, pending merge.
+**Completed:** registry/ (skills, tools, mcp-servers, agents, methodologies, model-capabilities) with honest classification of all 20 user-supplied external resources plus what was already installed; harness/ module skeleton (18 modules, each README states real/policy-only/not-built status); two new real, tested scripts (scripts/health/process-check.sh, scripts/discovery/registry-refresh-check.sh); project isolation convention added to projects/README.md; doctor.sh extended and re-verified (9/9 PASS); root CLAUDE.md and skills inventory updated to link the new material.
+**Explicitly not built:** a custom multi-agent orchestration engine, a background process-monitoring daemon, or automated continuous skill-update cron job -- see harness/README.md's "why no custom orchestration/process-monitoring engine" section and registry/methodologies.yaml for the reasoning on each. These were evaluated as duplicate infrastructure (platform Agent/Workflow tools already do this) or as needing a persistent host this account doesn't have.
+**Not installed:** all ~20 externally-supplied skills/tools researched this pass -- each has a stated decision in registry/skills.yaml or registry/tools.yaml (overlap with ponytail/caveman/Graphify already installed, no active project to apply a design skill to, or needing a source read before trust that wasn't done in this registry-building pass).
+**Blockers:** none.
+**Next action:** commit on a branch, PR against protected main, merge, update FINAL_IMPLEMENTATION_REPORT.md.
