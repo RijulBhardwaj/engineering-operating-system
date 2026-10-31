@@ -10,8 +10,8 @@ Audited 2026-10-31 from an active Claude Code session on this account. Re-audit 
 | ecc (ECC marketplace) | Plugin bundle | ~400 skills/agents/commands: reviewers per language, build-resolvers, TDD workflows, orchestration (/orch-*), ADR authoring (architecture-decision-records skill), git-workflow, security-review, etc. | Installed, enabled |
 | agent-skills | Plugin | Addy Osmani's 25 lifecycle skills + 4 agent personas (spec-driven dev, TDD, frontend-ui-engineering, API design, review, security, CI/CD, ADRs, observability) | Installed 2026-10-31 |
 | floorplan | Plugin | Plain-English codebase architecture map + security health check + blueprint-from-spec | Installed 2026-10-31 |
-| ponytail | Plugin | Forces minimal-diff, YAGNI-first solutions | Installed, active full |
-| caveman | Plugin | Terse communication style + cavecrew agents (investigator/builder/reviewer) | Installed, active full |
+| ponytail | Plugin | Forces minimal-diff, YAGNI-first solutions | Disabled 2026-10-31, replaced by chisle (not uninstalled) |
+| caveman | Plugin | Terse communication style + cavecrew agents (investigator/builder/reviewer) | Disabled 2026-10-31, replaced by chisle (not uninstalled) |
 | GitHub (gh CLI) | Tool | Repo/PR/issue/branch/Actions operations | Available, authenticated as RijulBhardwaj |
 | Claude Docs (mcp 1a59c906...) | Connector | Living docs on claude.ai | Available |
 | Claude Browser (built-in) | Tool | Web research, page reading, dev server preview | Available |

@@ -30,27 +30,29 @@ skills:
 
   - id: andrej-karpathy-skills
     name: Andrej Karpathy Skills
-    description: A single CLAUDE.md file encoding Karpathy's observations on LLM coding pitfalls -- not a skill in the SKILL.md sense, just a prompt document.
+    description: A single CLAUDE.md file encoding Karpathy's observations on LLM coding pitfalls -- not a skill in the SKILL.md sense, just a prompt document. Four guidelines -- think before coding, simplicity first, surgical changes, goal-driven execution.
     category: Documentation Resource
     source: https://github.com/multica-ai/andrej-karpathy-skills
-    installation_status: not-installed
+    installation_status: installed
+    installation_location: Folded directly into .claude/rules/coding-standards.md (not a separate plugin -- it's a single markdown file, so adoption means merging its content into the rule file every session already reads)
     compatible: true
     lifecycle_stages: [coding]
     last_reviewed: "2026-10-31"
     security_status: "Low risk (plain markdown, no executable code). Star count reported (227149) is implausible for a single-file repo -- unverified."
-    decision: "Not installed as a separate skill. Overlaps with .claude/rules/coding-standards.md and engineering-principles.md already in this repo."
+    decision: "Adopted 2026-10-31 at user's explicit mandatory instruction. Merged (not duplicated) into coding-standards.md -- overlapping points with existing rules are cross-referenced rather than repeated twice."
 
   - id: chisle
     name: Chisle
-    description: Cuts agent token bill on three axes -- terse prose, YAGNI-first code, tool-output compression. Overlaps with ponytail and caveman, already installed.
+    description: Session-start ruleset for terse/YAGNI-first output plus a PostToolUse hook that trims oversized tool output (author claims ~46% context reduction). Began as a merge of caveman and ponytail; author benchmarks it as leaner than both.
     category: Claude Plugin
     source: https://github.com/JayPokale/Chisle
-    installation_status: not-installed
+    installation_status: installed
+    installation_location: Claude plugin marketplace (chisle@chisle), installed via npx chisle --only claude after --dry-run preview
     compatible: true
-    lifecycle_stages: [coding]
+    lifecycle_stages: [coding, all]
     last_reviewed: "2026-10-31"
-    security_status: "729 stars, pushed 2026-10-24 -- plausible, actively maintained."
-    decision: "Not installed. Direct functional overlap with ponytail and caveman already active on this account."
+    security_status: "Dry-run previewed before install: only adds the marketplace + installs the plugin, same pattern as agent-skills/floorplan. MIT licensed, zero dependencies per docs. 729 stars, pushed 2026-10-24 -- plausible, actively maintained."
+    decision: "Installed 2026-10-31 at user's explicit instruction, REPLACING ponytail and caveman (both set to false in ~/.claude/settings.json's enabledPlugins -- not uninstalled, just disabled, in case of rollback)."
 
   - id: floorplan
     name: Floorplan
