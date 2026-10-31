@@ -175,3 +175,16 @@ skills:
     last_reviewed: "2026-10-31"
     security_status: "23149 stars reported -- implausible, unverified. Pushed 2026-10-18 -- repo itself active."
     decision: "Not installed. Niche illustration capability with no current demand on this account's active project."
+
+  - id: superpowers
+    name: Superpowers (obra)
+    description: Agentic skills framework -- TDD (RED-GREEN-REFACTOR), systematic debugging, brainstorming-to-design, writing/executing plans, subagent-driven development, parallel agent dispatch, code review request/receive, git worktrees, branch finishing.
+    category: Claude Plugin
+    source: https://github.com/obra/superpowers
+    installation_status: installed
+    installation_location: Claude plugin marketplace (superpowers@claude-plugins-official)
+    compatible: true
+    lifecycle_stages: [requirements, planning, coding, testing, code-review, git-workflow]
+    last_reviewed: "2026-10-31"
+    security_status: "Reviewed via WebFetch before install: no end-user install scripts for the Claude Code path (official marketplace), only maintainer-only scripts in the repo. One opt-out telemetry call (brainstorming companion loads a logo including version from the project's own site) -- disabled via SUPERPOWERS_DISABLE_TELEMETRY=1 in ~/.claude/settings.json env. Star count (309717) implausible/unverified, same caveat as every other entry here -- author (Jesse Vincent / obra, known OSS maintainer) is independently credible regardless."
+    decision: "Installed 2026-10-31 at user's explicit instruction. Three-way skill overlap now exists: ECC, agent-skills, and superpowers all ship TDD/planning/code-review skills. Use whichever one's specific skill fits the task (e.g. superpowers' subagent-driven-development for a multi-file parallel build, agent-skills' doubt-driven-development for adversarial review, ECC's /orch-* for the gated pipeline workflows) -- never stack two for the same step."

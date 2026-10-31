@@ -19,4 +19,4 @@ jobs:
       - name: Validate YAML syntax
         run: |
           pip install --quiet yamllint
-          yamllint -d relaxed projects/project-registry.yaml .github/workflows/*.yml
+          yamllint -d relaxed projects/project-registry.yaml registry/*.yaml .github/workflows/*.yml
