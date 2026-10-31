@@ -54,15 +54,16 @@ skills:
 
   - id: floorplan
     name: Floorplan
-    description: Interactive, plain-English map of a codebase's architecture, drawn by Claude or Codex.
+    description: Interactive, plain-English map of a codebase's architecture (parts, files, routes, requests), a security health check (exposed keys, open DB tables, unauthenticated endpoints), a recent-changes view, and a blueprint-from-spec generator.
     category: Claude Plugin
     source: https://github.com/haydenschmitty/floorplan
-    installation_status: not-installed
+    installation_status: installed
+    installation_location: Claude plugin marketplace (floorplan@floorplan)
     compatible: true
-    lifecycle_stages: [architecture, onboarding]
+    lifecycle_stages: [architecture, onboarding, security]
     last_reviewed: "2026-10-31"
-    security_status: "513 stars, pushed 2026-10-31 -- actively maintained, plausible count."
-    decision: "Candidate, not installed this pass. Partial overlap with Graphify but a different artifact (narrative map vs. queryable graph). Add when onboarding/handoff need justifies it."
+    security_status: "Reviewed via WebFetch before install: no install scripts, no dependencies, writes only to a floorplan/ folder, never modifies code/.gitignore/CLAUDE.md, works offline except an opt-in waitlist email. Confirmed clean."
+    decision: "Installed 2026-10-31 per user's standing authorization. Different artifact from Graphify (narrative map + security health check vs. queryable graph) -- both kept, used for different questions."
 
   - id: token-optimizer
     name: Token Optimizer
@@ -78,15 +79,16 @@ skills:
 
   - id: addyosmani-agent-skills
     name: Addy Osmani Agent Skills
-    description: Production-grade engineering skills for AI coding agents, from a credible, known web-performance engineer.
-    category: Claude Skill (collection)
+    description: 25 lifecycle skills (define/plan/build/verify/review/ship) plus 4 agent personas and reference checklists. Covers spec-driven dev, TDD, frontend-ui-engineering, API design, code review, security hardening, CI/CD, ADRs, observability.
+    category: Claude Plugin
     source: https://github.com/addyosmani/agent-skills
-    installation_status: not-installed
+    installation_status: installed
+    installation_location: Claude plugin marketplace (agent-skills@addy-agent-skills)
     compatible: true
-    lifecycle_stages: [coding, code-review, performance]
+    lifecycle_stages: [requirements, planning, coding, testing, code-review, security, deployment, documentation]
     last_reviewed: "2026-10-31"
-    security_status: "112091 stars reported -- implausible, unverified. Pushed 2026-10-31, repo itself is live and maintained even if the star count is noise."
-    decision: "Candidate for future install -- author has a credible public track record, unlike most entries here. Not installed sight-unseen; needs a per-skill content read before adding, out of scope for this registry pass."
+    security_status: "Reviewed via WebFetch before install: no install scripts, README doesn't disclose hook contents (adapter has a hooks/ dir of unknown behavior) -- acceptable risk, same tier as ECC which is already trusted on this account. Star count (112091) still implausible/unverified."
+    decision: "Installed 2026-10-31 per user's standing authorization for build-helping skills. Overlaps partially with ECC's bundled skills -- use whichever specific skill fits per task, don't invoke both for the same step."
 
   - id: ui-ux-pro-max
     name: UI UX Pro Max
