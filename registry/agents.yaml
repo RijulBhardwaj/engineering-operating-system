@@ -1,0 +1,28 @@
+# Agent persona registry. Full definitions live in .claude/agents/*.md -- this file is the index + metadata.
+agents:
+  - {id: engineering-lead, file: .claude/agents/engineering-lead.md, model_tier: high, invoke_when: "multi-specialist task, ambiguous scope decomposition"}
+  - {id: software-architect, file: .claude/agents/software-architect.md, model_tier: high, invoke_when: "new project, new service boundary, technology swap, scaling problem"}
+  - {id: backend-engineer, file: .claude/agents/backend-engineer.md, model_tier: medium, invoke_when: "server-side feature against an approved spec/ADR"}
+  - {id: frontend-engineer, file: .claude/agents/frontend-engineer.md, model_tier: medium, invoke_when: "client-side feature against an approved spec"}
+  - {id: ai-ml-engineer, file: .claude/agents/ai-ml-engineer.md, model_tier: high, invoke_when: "model, embeddings, retrieval, or agent/tool pipeline work"}
+  - {id: data-engineer, file: .claude/agents/data-engineer.md, model_tier: medium, invoke_when: "data pipeline at a scale/frequency that justifies one"}
+  - {id: devops-engineer, file: .claude/agents/devops-engineer.md, model_tier: medium, invoke_when: "CI/CD, containerization, environment config"}
+  - {id: cloud-engineer, file: .claude/agents/cloud-engineer.md, model_tier: medium, invoke_when: "cloud resources, network topology, IAM policy"}
+  - {id: security-engineer, file: .claude/agents/security-engineer.md, model_tier: high, invoke_when: "auth, sensitive data, external input, pre-release trust-boundary review"}
+  - {id: qa-engineer, file: .claude/agents/qa-engineer.md, model_tier: medium, invoke_when: "test plan beyond unit tests, regression characterization"}
+  - {id: code-reviewer, file: .claude/agents/code-reviewer.md, model_tier: high, invoke_when: "before merge, anything beyond a trivial change -- never the author"}
+  - {id: technical-writer, file: .claude/agents/technical-writer.md, model_tier: low, invoke_when: "feature ships without docs, or docs drift from behavior"}
+
+# Model tier policy (applies across all agents above):
+#   low    -- file discovery, mechanical edits, formatting, routine docs
+#   medium -- routine implementation, standard debugging, unit tests, small architecture changes
+#   high   -- architecture design, security analysis, complex debugging, distributed systems, independent review
+# "Critical complexity" (cross-system architecture, major security/infra decisions) uses the highest
+# available reasoning effort PLUS independent verification by a second agent/session -- see
+# .claude/rules/agent-coordination.md and workflows/autonomous-development/README.md.
+#
+# Multi-session orchestration: this harness does NOT implement a custom orchestration engine.
+# It uses the platform's own Agent tool (single subagent) and Workflow tool (multi-agent pipeline,
+# opt-in only) as the orchestration mechanism. Building a parallel custom system would duplicate
+# infrastructure the platform already provides -- see harness/orchestration/README.md for the full
+# rationale.

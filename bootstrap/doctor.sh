@@ -18,6 +18,8 @@ if [ -d "$CLAUDE_DIR" ]; then check "CLAUDE_DIR exists" "PASS"; else check "CLAU
 if grep -qF "engineering-operating-system" "$CLAUDE_DIR/CLAUDE.md" 2>/dev/null; then check "global CLAUDE.md linked" "PASS"; else check "global CLAUDE.md linked" "WARN run install.sh"; fi
 if [ -d "$REPO_DIR/.git" ]; then check "repo is a git checkout" "PASS"; else check "repo is a git checkout" "FAIL"; fi
 if git -C "$REPO_DIR" remote get-url origin >/dev/null 2>&1; then check "origin remote configured" "PASS"; else check "origin remote configured" "WARN no remote set"; fi
+if [ -f "$REPO_DIR/registry/skills.yaml" ]; then check "skill registry present" "PASS"; else check "skill registry present" "FAIL"; fi
+if [ -f "$REPO_DIR/harness/README.md" ]; then check "harness module docs present" "PASS"; else check "harness module docs present" "FAIL"; fi
 
 echo "---"
 echo "PASS=$pass WARN=$warn FAIL=$fail"

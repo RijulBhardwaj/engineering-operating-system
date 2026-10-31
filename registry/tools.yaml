@@ -1,0 +1,51 @@
+# Software libraries, CLI tools and infrastructure platforms -- distinct from Claude skills/plugins/MCP servers.
+# Several items in the user's original list were classified here instead of skills.yaml because they are
+# standalone software for a future application, not Harness/Claude-session capabilities.
+tools:
+  - id: img2threejs
+    name: Img2ThreeJS
+    description: Rebuilds a reference image's object as a procedural, quality-gated Three.js model -- token-efficient image-to-3D.
+    category: Software library / CLI tool
+    source: https://github.com/img2threejs/img2threejs
+    installation_status: not-installed
+    compatible: true
+    relevant_lifecycle_stages: [frontend, 3d]
+    last_reviewed: "2026-10-31"
+    security_status: "19907 stars reported -- implausible, unverified. Pushed 2026-10-28 -- active."
+    decision: "Not Harness infrastructure -- a dependency of a future 3D-capable frontend project, decided per-project, not globally."
+
+  - id: omniroute
+    name: OmniRoute
+    description: AI gateway for multi-provider LLMs -- OpenAI-compatible endpoint with routing, load balancing, retries, fallbacks, rate limits, caching, observability.
+    category: Infrastructure Platform
+    source: https://github.com/ChrisCompton/omniroute
+    installation_status: not-installed
+    compatible: true
+    relevant_lifecycle_stages: [ai-ml, infrastructure]
+    last_reviewed: "2026-10-31"
+    security_status: "367 stars, pushed 2026-04-11, over 6 months stale relative to this review -- plausible count, check for newer activity before relying on it."
+    decision: "Standalone LLM-gateway infrastructure. This Harness doesn't run inference traffic itself -- relevant only to a future project needing multi-provider LLM routing."
+
+  - id: vllm
+    name: vLLM
+    description: High-throughput, memory-efficient LLM inference/serving engine.
+    category: Model-serving Infrastructure
+    source: https://github.com/vllm-project/vllm
+    installation_status: not-installed
+    compatible: true
+    relevant_lifecycle_stages: [ai-ml, infrastructure]
+    last_reviewed: "2026-10-31"
+    security_status: "Well-known, legitimate, major open-source project; 95965 stars is plausible for this one, unlike most entries in this registry. Pushed 2026-10-31, actively maintained."
+    decision: "Model-serving infra for a project that self-hosts LLM inference. Not installed here -- relevant only to a future AI/ML project with a real self-hosting need."
+
+  - id: context-mode
+    name: Context Mode
+    description: Context-window optimization for coding agents -- sandboxes tool output (claimed 98% reduction), persists session memory, routes across platforms via MCP + hooks.
+    category: MCP server / Claude Plugin
+    source: https://github.com/mksglu/context-mode
+    installation_status: not-installed
+    compatible: true
+    relevant_lifecycle_stages: [all]
+    last_reviewed: "2026-10-31"
+    security_status: "32984 stars reported -- implausible, unverified. Pushed 2026-10-31 -- repo active. MCP + hooks means real tool-call interception, a higher trust bar than a plain markdown skill; needs a source read before install, not done this pass."
+    decision: "Not installed. Overlaps with ponytail/caveman/token-efficiency.md already in place; adding a second context-interception layer without a measured problem is scope creep."

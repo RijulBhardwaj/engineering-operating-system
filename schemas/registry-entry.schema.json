@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RegistryEntry",
+  "description": "Shape of one entry in registry/skills.yaml or registry/tools.yaml.",
+  "type": "object",
+  "required": ["id", "name", "description", "category", "source", "installation_status", "last_reviewed", "security_status"],
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string"},
+    "description": {"type": "string"},
+    "category": {"type": "string"},
+    "source": {"type": "string"},
+    "installation_status": {"enum": ["installed", "not-installed", "blocked", "not-applicable"]},
+    "installation_location": {"type": "string"},
+    "compatible": {"type": "boolean"},
+    "lifecycle_stages": {"type": "array", "items": {"type": "string"}},
+    "relevant_agents": {"type": "array", "items": {"type": "string"}},
+    "last_reviewed": {"type": "string", "format": "date"},
+    "security_status": {"type": "string", "description": "Free-text note on trust signals found (and their reliability) and any special permission the tool requests."},
+    "decision": {"type": "string", "description": "Why installed/not-installed, stated so the decision can be revisited later without re-researching from scratch."},
+    "notes": {"type": "string"}
+  }
+}

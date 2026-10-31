@@ -1,0 +1,44 @@
+# MCP servers actually connected in this Claude Code account/session, audited 2026-10-31.
+# This is a snapshot -- re-audit when a new server connects or quarterly.
+mcp_servers:
+  - id: claude-docs
+    name: Claude Docs
+    description: Living docs on claude.ai -- create/edit documents from a session.
+    status: connected
+    last_reviewed: "2026-10-31"
+
+  - id: claude-browser
+    name: Claude Browser (built-in)
+    description: In-app browser pane for web research, page reading, dev-server preview.
+    status: connected
+    last_reviewed: "2026-10-31"
+
+  - id: claude-in-chrome
+    name: Claude in Chrome
+    description: User's real Chrome with existing logins -- navigate, click, fill forms.
+    status: connected (per-use permission required)
+    last_reviewed: "2026-10-31"
+
+  - id: computer-use
+    name: Computer use
+    description: Desktop automation, tiered permissions per application.
+    status: connected
+    last_reviewed: "2026-10-31"
+
+  - id: chrome-devtools
+    name: chrome-devtools (ecc plugin)
+    description: DevTools protocol access via the ECC plugin bundle.
+    status: failing to connect (CONNECTION_CLOSED, cached retry) as of 2026-10-31. Not usable until it reconnects.
+    last_reviewed: "2026-10-31"
+
+  - id: serena
+    name: Serena (referenced, not found)
+    description: Symbol-aware code navigation tool referenced in the user's global tool-priority instructions.
+    status: not connected this session -- referenced in instructions but no corresponding MCP tool was found. Do not assume present; verify before relying on it in any future session.
+    last_reviewed: "2026-10-31"
+
+  - id: context7
+    name: Context7 (referenced, not found)
+    description: Live documentation retrieval tool referenced in the user's global tool-priority instructions.
+    status: not connected this session -- same caveat as Serena. WebSearch is the fallback for current API docs until/unless this connects.
+    last_reviewed: "2026-10-31"

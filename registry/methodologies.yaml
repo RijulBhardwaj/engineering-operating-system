@@ -1,0 +1,36 @@
+# Development methodologies this harness actually applies, with the decision on each candidate from the source spec.
+methodologies:
+  - id: ai-sdlc-spec-driven
+    name: AI SDLC + spec-driven development
+    status: implemented
+    where: .claude/rules/architecture.md, workflows/specification-driven-development/README.md, templates/PRD, templates/technical-specification, templates/architecture-decision-record
+    notes: Mandatory gate for non-trivial work; trivial fixes exempt. This is the core methodology, not a candidate.
+
+  - id: adr-governance
+    name: Architecture Decision Records
+    status: implemented
+    where: templates/architecture-decision-record/adr-template.md, docs/architecture/decisions/ (ADR-0001 is the live example)
+    notes: Accepted ADRs are authoritative; superseding requires a new ADR, never silent drift.
+
+  - id: ralph-loop
+    name: Ralph Loop / autonomous iteration loops
+    status: policy-only, not a custom engine
+    where: workflows/autonomous-development/README.md
+    notes: "Decision: use the platform's own /loop and Workflow tools (which already implement stop conditions, iteration caps, and persistent state) rather than build a parallel autonomous-loop engine. Documented the required safety properties (explicit objective, completion condition, max iterations, failure detection) as policy for whichever mechanism is used."
+
+  - id: bmad-speckit-openspec-gsd
+    name: "BMAD / Spec Kit / OpenSpec / GSD"
+    status: evaluated, not adopted
+    notes: "These are alternative spec-driven-development frameworks with significant conceptual overlap with the AI-SDLC process already implemented in .claude/rules/architecture.md (PRD -> spec -> architecture -> ADR -> implementation). Adopting a second framework on top of the one already built and in use would fragment the process rather than improve it. Revisit only if a specific gap in the current process is identified that one of these specifically closes."
+
+  - id: multi-agent-orchestration
+    name: Multi-agent / agent-teams orchestration
+    status: implemented via platform tools
+    where: registry/agents.yaml (model tier + invoke-when policy), .claude/rules/agent-coordination.md
+    notes: "Uses the Agent tool (single subagent dispatch) and Workflow tool (multi-stage pipelines, opt-in) already provided by the platform. No custom orchestration daemon was built -- see harness/orchestration/README.md for why."
+
+  - id: process-monitoring-recovery
+    name: Process monitoring and automatic recovery
+    status: implemented as a lightweight script, not a background daemon
+    where: scripts/health/process-check.sh, harness/process_monitor/README.md
+    notes: "A real always-on daemon that detects stalled agent sessions and auto-recovers them is infrastructure this account does not have a host to run persistently. Implemented instead: a health-check script you (or a session) run on demand against named long-running shell jobs, plus a documented manual recovery procedure. Upgrading to a real daemon is a concrete, scoped follow-up, not claimed as done here."
