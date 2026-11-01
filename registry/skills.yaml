@@ -28,6 +28,20 @@ skills:
     last_reviewed: "2026-10-31"
     security_status: "Already installed and enabled on this account. Star count reported (293669) is implausible -- unverified, not a trust signal. No fresh audit of all ~400 bundled items was performed, only of the subset this session actually invoked."
 
+  - id: ponytail
+    name: Ponytail 5
+    description: "YAGNI-ladder coding discipline skill: stop at the first rung that solves the problem (reuse -> stdlib -> native -> dependency -> one line -> minimum code), lazy about the solution, never about reading the problem first. Leaves a test for risky logic; never skips validation/security/accessibility. Overlaps chisle's code ladder -- see decision."
+    category: Claude Plugin
+    source: https://github.com/DietrichGebert/ponytail
+    installation_status: installed
+    installation_location: Claude plugin marketplace (ponytail@ponytail), user scope
+    compatible: true
+    lifecycle_stages: [coding, testing]
+    relevant_agents: [all]
+    last_reviewed: "2026-11-02"
+    security_status: "Installed via `claude plugin marketplace add` / `claude plugin install` from the official DietrichGebert/ponytail repo. MIT license. No .exe/.dll shipped per upstream README warning -- only install from that repo or @dietrichgebert/ponytail on npm."
+    decision: "Installed 2026-11-02, user's explicit request. Active globally next session restart (per-prompt skill, not a hook). Both ponytail and chisle encode a YAGNI/lazy-coding ladder -- if both are active and conflict in practice, that's a user call, not an auto-resolution; flag it if noticed, don't silently prefer one."
+
   - id: andrej-karpathy-skills
     name: Andrej Karpathy Skills
     description: A single CLAUDE.md file encoding Karpathy's observations on LLM coding pitfalls -- not a skill in the SKILL.md sense, just a prompt document. Four guidelines -- think before coding, simplicity first, surgical changes, goal-driven execution.
