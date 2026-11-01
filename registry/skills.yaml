@@ -5,6 +5,8 @@ skills:
     name: Graphify
     description: Turns a codebase (code, docs, SQL schemas, configs, PDFs) into a queryable knowledge graph via local deterministic AST parsing. Claude Code /graphify skill.
     category: Claude Skill
+    primary_domain: CODEINTEL
+    secondary_domains: [CORE, DX, ARCH]
     source: https://github.com/Graphify-Labs/graphify
     installation_status: installed
     installation_location: ~/.claude/skills/graphify
@@ -19,6 +21,8 @@ skills:
     name: Everything Claude Code (ECC)
     description: Large plugin bundle, roughly 400 skills/agents/commands covering reviewers per language, build-resolvers, TDD workflows, orchestration, ADR authoring, git-workflow, security-review.
     category: Claude Plugin
+    primary_domain: DX
+    secondary_domains: [CORE, TEST, SEC, DEVOPS]
     source: https://github.com/affaan-m/ecc
     installation_status: installed
     installation_location: Claude plugin marketplace (ecc@ecc)
@@ -32,6 +36,8 @@ skills:
     name: Ponytail 5
     description: "YAGNI-ladder coding discipline skill: stop at the first rung that solves the problem (reuse -> stdlib -> native -> dependency -> one line -> minimum code), lazy about the solution, never about reading the problem first. Leaves a test for risky logic; never skips validation/security/accessibility. Overlaps chisle's code ladder -- see decision."
     category: Claude Plugin
+    primary_domain: TOOLING
+    secondary_domains: [CORE, DX]
     source: https://github.com/DietrichGebert/ponytail
     installation_status: installed
     installation_location: Claude plugin marketplace (ponytail@ponytail), user scope
@@ -46,6 +52,8 @@ skills:
     name: Andrej Karpathy Skills
     description: A single CLAUDE.md file encoding Karpathy's observations on LLM coding pitfalls -- not a skill in the SKILL.md sense, just a prompt document. Four guidelines -- think before coding, simplicity first, surgical changes, goal-driven execution.
     category: Documentation Resource
+    primary_domain: CORE
+    secondary_domains: [DX]
     source: https://github.com/multica-ai/andrej-karpathy-skills
     installation_status: installed
     installation_location: Folded directly into .claude/rules/coding-standards.md (not a separate plugin -- it's a single markdown file, so adoption means merging its content into the rule file every session already reads)
@@ -59,6 +67,8 @@ skills:
     name: Chisle
     description: Session-start ruleset for terse/YAGNI-first output plus a PostToolUse hook that trims oversized tool output (author claims ~46% context reduction). Began as a merge of caveman and ponytail; author benchmarks it as leaner than both.
     category: Claude Plugin
+    primary_domain: CONTEXT
+    secondary_domains: [DX, TOOLING]
     source: https://github.com/JayPokale/Chisle
     installation_status: installed
     installation_location: Claude plugin marketplace (chisle@chisle), installed via npx chisle --only claude after --dry-run preview
@@ -72,6 +82,8 @@ skills:
     name: Floorplan
     description: Interactive, plain-English map of a codebase's architecture (parts, files, routes, requests), a security health check (exposed keys, open DB tables, unauthenticated endpoints), a recent-changes view, and a blueprint-from-spec generator.
     category: Claude Plugin
+    primary_domain: ARCH
+    secondary_domains: [CODEINTEL, SEC, DX]
     source: https://github.com/haydenschmitty/floorplan
     installation_status: installed
     installation_location: Claude plugin marketplace (floorplan@floorplan)
@@ -85,6 +97,8 @@ skills:
     name: Token Optimizer
     description: Finds and fixes ghost tokens; targets context quality decay across compaction.
     category: Claude Plugin
+    primary_domain: CONTEXT
+    secondary_domains: [DX]
     source: https://github.com/alexgreensh/token-optimizer
     installation_status: not-installed
     compatible: true
@@ -97,6 +111,8 @@ skills:
     name: Addy Osmani Agent Skills
     description: 25 lifecycle skills (define/plan/build/verify/review/ship) plus 4 agent personas and reference checklists. Covers spec-driven dev, TDD, frontend-ui-engineering, API design, code review, security hardening, CI/CD, ADRs, observability.
     category: Claude Plugin
+    primary_domain: DX
+    secondary_domains: [SPEC, TEST, API, SEC, DEVOPS, ADR, OBS, FE]
     source: https://github.com/addyosmani/agent-skills
     installation_status: installed
     installation_location: Claude plugin marketplace (agent-skills@addy-agent-skills)
@@ -110,6 +126,8 @@ skills:
     name: UI UX Pro Max
     description: Design-intelligence skill for professional UI/UX across platforms -- 79 styles, 192 palettes, 74 font pairings, 25 charts, 22 stack guidelines.
     category: Claude Plugin
+    primary_domain: UI
+    secondary_domains: [DESIGN, FE, UX]
     source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
     installation_status: installed
     installation_location: Claude plugin marketplace (ui-ux-pro-max@ui-ux-pro-max-skill), user scope
@@ -123,6 +141,8 @@ skills:
     name: Taste Skill (tasteskill.dev)
     description: Agent skill for frontend design taste -- art direction, reference images, browser-based self-check instead of generic AI-looking UI.
     category: Claude Plugin
+    primary_domain: DESIGN
+    secondary_domains: [UI, FE, UX]
     source: https://github.com/leonxlnx/taste-skill
     installation_status: installed
     installation_location: Claude plugin marketplace (taste-skill@taste-skill), user scope
@@ -136,6 +156,8 @@ skills:
     name: Frontend Design (Anthropic official)
     description: Anthropic's official frontend-design skill -- anti-generic-AI-UI guidance (stop defaulting to Inter font / purple gradients), part of the example-skills bundle alongside brand-guidelines, canvas-design, web-artifacts-builder, webapp-testing, theme-factory.
     category: Claude Plugin
+    primary_domain: UI
+    secondary_domains: [DESIGN, FE]
     source: https://github.com/anthropics/skills
     installation_status: installed
     installation_location: Claude plugin marketplace (example-skills@anthropic-agent-skills), user scope
@@ -149,6 +171,8 @@ skills:
     name: Awesome Claude Design
     description: 68 ready-to-use DESIGN.md design-system inspirations; drop one in, scaffold a UI in one shot.
     category: Design Reference
+    primary_domain: DESIGN
+    secondary_domains: [UI, FE]
     source: https://github.com/VoltAgent/awesome-claude-design
     installation_status: not-installed
     compatible: true
@@ -161,6 +185,8 @@ skills:
     name: design-md-chrome
     description: Chrome extension that extracts styles from any website and generates DESIGN.md files or design skills.
     category: Browser Integration
+    primary_domain: DESIGN
+    secondary_domains: [UI, TOOLING]
     source: https://github.com/bergside/design-md-chrome
     installation_status: not-installed
     compatible: false
@@ -173,6 +199,8 @@ skills:
     name: Design Motion Principles
     description: Motion-design skill -- build or audit UI animation, distilled from named designers' published work.
     category: Claude Skill
+    primary_domain: MOTION
+    secondary_domains: [UI, FE]
     source: https://github.com/kylezantos/design-motion-principles
     installation_status: installed
     installation_location: "~/.claude/skills/design-motion-principles (manual copy -- repo has no .claude-plugin marketplace)"
@@ -186,6 +214,8 @@ skills:
     name: transitions.dev
     description: Copy-paste CSS transition snippet library skills -- transitions-dev (component transitions), transitions-polish (audit existing motion against its token scale), transitions-ui-generation.
     category: Claude Skill
+    primary_domain: MOTION
+    secondary_domains: [FE, UI]
     source: "https://transitions.dev/ (skills at https://github.com/Jakubantalik/transitions.dev/tree/main/skills)"
     installation_status: installed
     installation_location: "~/.claude/skills/{transitions-dev,transitions-polish,transitions-ui-generation} (manual copy, sparse-checkout of skills/ -- parent repo is a full product website, not a plugin marketplace)"
@@ -199,6 +229,8 @@ skills:
     name: Anatomy
     description: Agent skill for generating detailed isometric SVG illustrations of machines/systems, with optional WebGL/3D effects.
     category: Claude Skill
+    primary_domain: DESIGN
+    secondary_domains: [3D, DOCS]
     source: https://github.com/wheresryan22/anatomy
     installation_status: not-installed
     compatible: true
@@ -211,6 +243,8 @@ skills:
     name: Superpowers (obra)
     description: Agentic skills framework -- TDD (RED-GREEN-REFACTOR), systematic debugging, brainstorming-to-design, writing/executing plans, subagent-driven development, parallel agent dispatch, code review request/receive, git worktrees, branch finishing.
     category: Claude Plugin
+    primary_domain: DX
+    secondary_domains: [TEST, ARCH, GIT, TOOLING]
     source: https://github.com/obra/superpowers
     installation_status: installed
     installation_location: Claude plugin marketplace (superpowers@claude-plugins-official)
@@ -219,3 +253,304 @@ skills:
     last_reviewed: "2026-10-31"
     security_status: "Reviewed via WebFetch before install: no end-user install scripts for the Claude Code path (official marketplace), only maintainer-only scripts in the repo. One opt-out telemetry call (brainstorming companion loads a logo including version from the project's own site) -- disabled via SUPERPOWERS_DISABLE_TELEMETRY=1 in ~/.claude/settings.json env. Star count (309717) implausible/unverified, same caveat as every other entry here -- author (Jesse Vincent / obra, known OSS maintainer) is independently credible regardless."
     decision: "Installed 2026-10-31 at user's explicit instruction. Three-way skill overlap now exists: ECC, agent-skills, and superpowers all ship TDD/planning/code-review skills. Use whichever one's specific skill fits the task (e.g. superpowers' subagent-driven-development for a multi-file parallel build, agent-skills' doubt-driven-development for adversarial review, ECC's /orch-* for the gated pipeline workflows) -- never stack two for the same step."
+
+  - id: cloudflare-skills
+    name: Cloudflare Skills + MCP
+    description: Official Cloudflare plugin -- skills for Workers/Workers AI/Durable Objects/D1/R2/wrangler plus a remote MCP server (OAuth, not API-token based) for live Cloudflare account operations.
+    category: Claude Plugin
+    primary_domain: SERVERLESS
+    secondary_domains: [CLOUD, DEVOPS, API]
+    source: https://github.com/cloudflare/skills
+    installation_status: installed
+    installation_location: Claude plugin marketplace (cloudflare@cloudflare)
+    compatible: true
+    lifecycle_stages: [architecture, coding, deployment, operations]
+    relevant_agents: [cloud-engineer, backend-engineer, devops-engineer]
+    last_reviewed: "2026-11-01"
+    security_status: "Installed from Cloudflare's own official setup doc (developers.cloudflare.com/agent-setup/prompt.md), fetched and reviewed before running. MCP auth is OAuth via browser consent, not a manually-created API token -- no long-lived credential handled by this agent."
+    decision: "Installed 2026-11-01 for fitness-intelligence-platform's Phase 2 Cloudflare Workers/Workers AI deployment. MCP connection pending user OAuth authorization (plugin install alone doesn't register the MCP server into a running session without a reload/restart)."
+
+  - id: netresearch-cli-tools
+    name: CLI Tools (netresearch)
+    description: Claude Code plugin bundle of CLI-oriented tooling from the netresearch marketplace.
+    category: Claude Plugin
+    primary_domain: CLI
+    secondary_domains: [DX, TOOLING]
+    source: https://github.com/netresearch/claude-code-marketplace
+    installation_status: installed
+    installation_location: Claude plugin marketplace (cli-tools@netresearch-claude-code-marketplace)
+    compatible: true
+    lifecycle_stages: [coding]
+    last_reviewed: "2026-11-01"
+    security_status: "Installed at user's explicit instruction. Not yet audited item-by-item -- flag back if any bundled command turns out to need elevated/destructive permissions before use."
+    decision: "Installed 2026-11-01 at user's explicit instruction. Not yet exercised against an active project."
+
+  - id: powershell-skills
+    name: PowerShell Skills (agent-shells)
+    description: PowerShell guardrails/runtime aid for AI agents on Windows -- path resolution, command discovery, failure classification, allowlisted read-only cmdlet execution via Invoke-AgentPowerShell.ps1.
+    category: Claude Skill
+    primary_domain: CLI
+    secondary_domains: [DX, SYS]
+    source: https://github.com/agent-shells/powershell-skills
+    installation_status: installed
+    installation_location: npm global (@agent-shells/powershell-skills) + ~/.claude/skills/powershell-command-runner
+    compatible: true
+    lifecycle_stages: [coding, operations]
+    relevant_agents: [devops-engineer, cloud-engineer]
+    last_reviewed: "2026-11-01"
+    security_status: "4 stars, 1 fork, MIT, has a security policy. Installer behavior reviewed via WebFetch before running; `powershell-skills doctor` confirmed clean install post-run (one cosmetic warn: pwsh not on PATH)."
+    decision: "Installed 2026-11-01 at user's explicit instruction. Directly relevant: this environment is Windows/PowerShell."
+
+  - id: claude-skills-alirezarezvani
+    name: Claude Skills Marketplace (alirezarezvani)
+    description: Large third-party Claude Code plugin marketplace, ~400 skills across ~20 domains (engineering, product, marketing, compliance, etc), installed per-domain-bundle.
+    category: Claude Plugin
+    primary_domain: DX
+    secondary_domains: [ARCH, TEST, CORE]
+    source: https://github.com/alirezarezvani/claude-skills
+    installation_status: installed
+    installation_location: Claude plugin marketplace (claude-code-skills) -- only the engineering-skills@claude-code-skills bundle installed, not the full ~400-skill set
+    compatible: true
+    lifecycle_stages: [requirements, architecture, coding, code-review, testing]
+    relevant_agents: [software-architect, backend-engineer, qa-engineer]
+    last_reviewed: "2026-11-01"
+    security_status: "29.1k stars reported -- unverified like other star counts in this file, not treated as a trust signal on its own. Installed only via the official Claude Code plugin marketplace mechanism (/plugin marketplace add, /plugin install) -- the repo's other install paths (OpenClaw curl|bash one-liner, jorgeasaurus-style irm|iex) were deliberately not used. Overlaps with ECC and agent-skills (three marketplaces now ship engineering/code-review skills) -- pick whichever skill's specific framing fits a task, don't stack."
+    decision: "Installed engineering-skills bundle only 2026-11-01 at user's instruction, scoped to what this harness needs -- not the full ~400-skill marketplace."
+
+  - id: psclaudecode
+    name: PSClaudeCode (dfinke)
+    description: Standalone PowerShell reimplementation of an agent loop against the raw Anthropic API -- not a Claude Code skill or plugin, a separate competing agent runtime.
+    category: Standalone tool
+    primary_domain: AUTODEV
+    secondary_domains: [CLI]
+    source: https://github.com/dfinke/PSClaudeCode
+    installation_status: not-installed
+    compatible: false
+    last_reviewed: "2026-11-01"
+    security_status: "Requires its own ANTHROPIC_API_KEY env var and ships a -dangerouslySkipPermissions flag that bypasses its own confirmation prompts entirely -- outside this harness's permission/gate model."
+    decision: "Not installed 2026-11-01. Wrong category for 'add to the build harness' -- it's an alternative to Claude Code, not an extension of it."
+
+  - id: agent-skills-jorgeasaurus
+    name: Agent Skills (jorgeasaurus)
+    description: Skill bundle for Copilot/Codex/Claude/other runtimes, installed via a bootstrap one-liner that overwrites same-named skills in ~/.claude/skills.
+    category: Claude Skill
+    primary_domain: DX
+    secondary_domains: [TOOLING]
+    source: https://github.com/jorgeasaurus/agent-skills
+    installation_status: not-installed
+    compatible: true
+    last_reviewed: "2026-11-01"
+    security_status: "14 stars, 1 fork, no Claude-Code-specific install path -- only `irm <url> | iex` (download-and-execute, unreviewed script content) or a script that silently overwrites existing same-named skills. Script contents not inspected before this decision."
+    decision: "Not installed 2026-11-01. Blind remote-script execution without reviewing the script first, low adoption signal, and overlaps functionality already covered by ECC/agent-skills/claude-code-skills. Revisit only if the script is fetched and reviewed first, or a specific skill in it is named as needed."
+
+  - id: claude-code-templates-davila7
+    name: Claude Code Templates (davila7)
+    description: npx-invoked CLI/browser for installing agents/commands/settings/hooks/MCP/skill templates on demand, plus analytics and a conversation monitor with optional Cloudflare Tunnel remote access.
+    category: CLI tool (on-demand, not persistently installed)
+    primary_domain: TOOLING
+    secondary_domains: [DX, OBS]
+    source: https://github.com/davila7/claude-code-templates
+    installation_status: not-installed
+    compatible: true
+    last_reviewed: "2026-11-01"
+    security_status: "33.0k stars reported -- unverified as a trust signal like other entries, but repo and maintainer pattern are consistent with genuine wide adoption. Nothing persistent to install -- each `npx claude-code-templates@latest` run fetches and executes current npm package code."
+    decision: "Not installed 2026-11-01 -- nothing requested from it specifically. Logged as available on demand via npx. Flag: the --tunnel conversation-monitor feature exposes session data externally and must not be enabled without asking first, regardless of this harness's general tool-install authorization."
+
+  - id: claude-code-notes-danielrosehill
+    name: Claude Code Notes (danielrosehill)
+    description: Personal markdown notebook of Claude Code tips/patterns -- not a skill, plugin, or installable artifact.
+    category: Documentation Resource
+    primary_domain: DOCS
+    secondary_domains: [KNOWLEDGE]
+    source: https://github.com/danielrosehill/Claude-Code-Notes
+    installation_status: not-installed
+    compatible: false
+    last_reviewed: "2026-11-01"
+    security_status: "4 stars, personal notes repo, nothing executable to install."
+    decision: "Not installed 2026-11-01 -- nothing to install; reference-only if a specific pattern from it is ever wanted."
+
+  - id: epidemic-sound
+    name: Epidemic Sound
+    description: Paid stock music/SFX licensing service for video/content projects. No public API, MCP server, or Claude skill wrapper found.
+    category: External service (reference only, not installable)
+    primary_domain: MULTIMODAL
+    secondary_domains: []
+    source: https://www.epidemicsound.com
+    installation_status: not-installable
+    compatible: false
+    last_reviewed: "2026-11-01"
+    security_status: "N/A -- nothing to install. A paid subscription site, used manually (download licensed tracks, drop into a project's media/ folder)."
+    decision: "Not installed 2026-11-01 (general-purpose addition, no active project need) -- there is nothing here a Claude skill/plugin/MCP can wrap: no public API. Logged as the reference to use when a project needs licensed music/SFX; get the track/license manually."
+
+  - id: obs-backgroundremoval
+    name: OBS Background Removal (royshil)
+    description: C++ OBS Studio plugin -- real-time ML background removal/blur for webcam/video sources inside OBS.
+    category: External desktop-app plugin (not a Claude skill, not installable into this harness)
+    primary_domain: CV
+    secondary_domains: [MULTIMODAL, DESKTOP]
+    source: https://github.com/royshil/obs-backgroundremoval
+    installation_status: not-installable-here
+    compatible: false
+    last_reviewed: "2026-11-01"
+    security_status: "Active repo (obs-plugins org), builds via CMake against OBS Studio's own plugin SDK. Installs into the user's OBS Studio application, not into Claude Code or this harness -- outside this system's install/permission model entirely."
+    decision: "Not installed 2026-11-01 (general-purpose addition, no active project need) -- this is OBS Studio software, built and installed on the user's machine the normal way (CMake build or prebuilt release from the repo's Releases page), not a Claude Code skill/plugin/MCP. Nothing for this harness to wire in. Logged as the reference for whenever a video/streaming project needs webcam background removal."
+
+  - id: playwright-mcp
+    name: Playwright MCP (microsoft)
+    description: Official Microsoft MCP server for browser automation via Playwright's accessibility tree (not screenshots/vision) -- navigate, click, type, fill forms, evaluate JS, manage tabs, network/storage inspection (opt-in caps).
+    category: MCP server
+    primary_domain: AUTOMATION
+    secondary_domains: [E2E, TEST, WEB]
+    source: https://github.com/microsoft/playwright-mcp
+    installation_status: installed
+    compatible: true
+    last_reviewed: "2026-11-01"
+    installation_location: "User-scope MCP config (claude mcp add playwright npx @playwright/mcp@latest --scope user) -- available to all projects, not just this repo."
+    security_status: "Official Microsoft repo, 36k+ stars, clean single-command install, no external account/API key needed. Runs local Playwright browser process only."
+    decision: "Installed 2026-11-01 at user's instruction (general-purpose addition). Complements ecc:e2e-runner (which defaults to Vercel Agent Browser with Playwright fallback) and the built-in Claude_Browser tools already in-session -- use playwright-mcp specifically when a task needs persistent browser state across many turns or token-efficient DOM access without screenshots; the README itself notes the Playwright CLI/SKILLs path can be more token-efficient for straightforward coding-agent browsing."
+
+  - id: tdd-guard
+    name: TDD Guard (nizos)
+    description: Claude Code plugin hook that blocks implementation lacking a failing test and blocks code beyond what current tests require.
+    category: Claude plugin (hook-based enforcement)
+    primary_domain: TEST
+    secondary_domains: [AUTODEV, DX]
+    source: https://github.com/nizos/tdd-guard
+    installation_status: not-installed
+    compatible: true
+    last_reviewed: "2026-11-01"
+    security_status: "2.3k stars, hooks run with user permissions per its own docs. No red flags found, but the project's own README states it has been succeeded by a newer tool (Probity) and recommends new projects start there instead."
+    decision: "Not installed 2026-11-01 -- the tool's own maintainers point new adopters at its successor, Probity, not at this repo. Also overlaps with GateGuard (already active, blocks first-touch Write/Edit until facts are stated) and ECC's tdd-guide/django-tdd/go-test/etc TDD skills -- installing a third, deprecated enforcement layer on top of both would be redundant. Revisit Probity specifically if TDD-hook enforcement is wanted beyond what GateGuard + the TDD skills already give."
+
+  - id: claude-squad
+    name: Claude Squad (smtg-ai)
+    description: Terminal app (tmux + git worktrees) that runs multiple local coding agents (Claude Code, Codex, Gemini, Aider) in parallel, each in its own isolated workspace/branch.
+    category: Standalone external tool (not a Claude Code plugin/skill/MCP)
+    primary_domain: AUTODEV
+    secondary_domains: [DX, GIT]
+    source: https://github.com/smtg-ai/claude-squad
+    installation_status: not-installed
+    compatible: false
+    last_reviewed: "2026-11-01"
+    security_status: "8.3k stars. Installs its own `cs` binary via Homebrew or a curl|install.sh script; requires tmux + GitHub CLI. Nothing installed into Claude Code itself."
+    decision: "Not installed 2026-11-01. Same category issue as PSClaudeCode (already logged not-installed): an external orchestrator that runs Claude Code as a subprocess, not an extension of it -- 'add to the build harness' doesn't fit a tool this harness would shell out to. This session's own Agent/Workflow tools already cover parallel-subagent orchestration inside Claude Code."
+
+  - id: claude-subconscious
+    name: Claude Subconscious (letta-ai)
+    description: Background agent (Letta Code SDK) that watches session transcripts via a Stop hook, reads the codebase, and injects memory/guidance before the next prompt.
+    category: Claude plugin (background agent, cloud-backed)
+    primary_domain: CONTEXT
+    secondary_domains: [AUTODEV, SEC]
+    source: https://github.com/letta-ai/claude-subconscious
+    installation_status: not-installed
+    compatible: false
+    last_reviewed: "2026-11-01"
+    security_status: "REJECTED on review. The repo's own README calls it a 'demo app... not intended to be used in production.' By default it sends full session transcripts -- user messages, assistant responses, thinking blocks, tool usage, so any secrets/code/output that appeared in a session -- to a cloud Letta server, with no stated redaction/retention/encryption policy. Requires a separate LETTA_API_KEY. 'Full' SDK-tools mode grants it Bash/Edit/Write/Task, letting it modify files and spawn subagents on its own. One memory agent serves all projects by default, so one repo's data can leak context into another."
+    decision: "Not installed 2026-11-01. Directly conflicts with this harness's security.md (never a service-role-equivalent/blanket-trust background agent, least privilege) and duplicates this account's existing first-party auto-memory system (C:\\Users\\Rijul Bhardwaj\\.claude\\projects\\...\\memory\\) without needing to ship transcripts to a third-party cloud service to get it. A self-hosted Letta instance would reduce but not eliminate the risk; not worth it when the built-in memory system already covers the same need locally."
+
+  - id: awesome-claude-code
+    name: Awesome Claude Code (hesreallyhim)
+    description: Curated index/master list of Claude Code skills, hooks, commands, slash-command collections, and orchestrators maintained by the community.
+    category: Documentation/index resource (not installable)
+    primary_domain: KNOWLEDGE
+    secondary_domains: [DX, DOCS]
+    source: https://github.com/hesreallyhim/awesome-claude-code
+    installation_status: not-installable
+    compatible: false
+    last_reviewed: "2026-11-01"
+    security_status: "52.6k stars, index-only, nothing executable to install directly."
+    decision: "Not installed 2026-11-01 -- nothing to install; it's a discovery index, not a tool. Useful as a starting point the next time a specific capability gap needs a candidate search, same role as this registry file plays internally."
+
+  - id: ruflo
+    name: Ruflo (ruvnet, formerly Claude Flow)
+    description: Agent "meta-harness" for Claude Code/Codex -- 100+ specialized agents, swarm coordination, cross-session persistent memory, a plugin marketplace (~35 plugins/"mods"), and a console.
+    category: Claude plugin + CLI + MCP server (competing meta-harness)
+    primary_domain: AUTODEV
+    secondary_domains: [ORCH, CONTEXT, AGENT]
+    source: https://github.com/ruvnet/ruflo
+    installation_status: not-installed
+    compatible: false
+    last_reviewed: "2026-11-01"
+    security_status: "The project's own README states mods run with the user's account permissions and are not sandboxed -- review each mod's code before installing. Same unsandboxed/unreviewed-third-party-code risk class as claude-subconscious and agent-skills-jorgeasaurus, already rejected for the same reason."
+    decision: "Not installed 2026-11-01. This *is* a competing engineering-operating-system -- its own agent roster, swarm coordination, and persistent memory duplicate what this repo (agent-coordination.md, 12 project agents + ECC's ~400), this session's native Agent/Workflow tools, and the account's own auto-memory system already do. Installing it means running two parallel harnesses with overlapping, possibly conflicting, coordination/memory models -- not an addition, a fork of the governance layer itself. Revisit only for one specific plugin/mod from its marketplace, named and reviewed individually, never the whole meta-harness wholesale."
+
+  - id: openverse-api
+    name: Openverse
+    description: WordPress Foundation's openly-licensed media search engine/API -- images + audio, CC-licensed, used for sourcing free sound effects for video projects.
+    category: Public API (reference, no install)
+    primary_domain: MULTIMODAL
+    secondary_domains: []
+    source: https://openverse.org
+    installation_status: not-installable
+    compatible: false
+    last_reviewed: "2026-11-01"
+    security_status: "Legitimate, official WordPress Foundation project. No API key needed for basic use (anonymous rate limit ~20/min, 200/day). The '5 million+ audio files' figure comes from third-party sites summing per-source stats, not an openverse.org statement directly -- plausible, not independently confirmed."
+    decision: "Not installed 2026-11-01 (general-purpose addition, no active project need) -- it's a public HTTP API, nothing to install; a project would just call it. Logged as the reference for whenever a video/content project needs licensed sound effects."
+
+  - id: real-sfx-skill
+    name: Real SFX (Claude Code skill, source unconfirmed)
+    description: Claimed Claude Code skill that places real sound-effect recordings on the exact frame of a video timeline, from cue lists/HyperFrames/screen recordings.
+    category: Claude skill (unverified source)
+    primary_domain: MULTIMODAL
+    secondary_domains: []
+    source: "Referenced via a third-party blog post (Vivian Lin) citing a 'Clipwing/skills' repo path skills/real-sfx -- the repo itself was not found/confirmed in this review."
+    installation_status: not-installed
+    compatible: false
+    last_reviewed: "2026-11-01"
+    security_status: "UNVERIFIED. No primary-source GitHub repo located to inspect contents, license, or install instructions -- only a secondary blog post describing it. Not installing unreviewed, unconfirmed-source code regardless of category."
+    decision: "Not installed 2026-11-01 -- can't review what can't be located at a primary source. Revisit if the user supplies the actual repo URL directly."
+
+  - id: earshot
+    name: earshot (name collision -- multiple unrelated projects)
+    description: "Ambiguous name: at least 4 distinct, unrelated repos share it -- (1) Leonxlnx/earshot, a local CPU-only MIT-licensed MCP server that turns audio into structured, reasoning-over-able data (spectrograms, loudness, sound-effect maps, speech transcription) -- best match for 'gives Claude ears'; (2) mromanczuk/earshot, a macOS-only plugin that speaks Claude Code's turn summaries/prompts aloud; (3) shreyashguptas/earshot, reads Claude Code's last response aloud via /tldr; (4) a separate AirPods/head-gesture voice-control project, same name."
+    category: Claude MCP server / plugin (ambiguous which one is wanted)
+    primary_domain: MULTIMODAL
+    secondary_domains: [AGENT]
+    source: "https://github.com/Leonxlnx/earshot (best-match candidate, unconfirmed as the one intended)"
+    installation_status: not-installed
+    compatible: false
+    last_reviewed: "2026-11-01"
+    security_status: "Leonxlnx/earshot: MIT-licensed, local-only (no cloud calls, no API key), install via `claude mcp add earshot ...` per its README. No red flags found for that specific candidate -- but given 4 same-named unrelated projects exist, confirm which one before installing anything under this name."
+    decision: "Not installed 2026-11-01 (general-purpose addition, no active project need, plus name ambiguity). If actually wanted: confirm Leonxlnx/earshot (audio-reasoning MCP, matches the video/SFX-workflow context) vs. one of the Claude-Code-narration variants (different purpose entirely) before running any install command."
+
+  - id: context-bar
+    name: context-bar (hamzafer/claude-code-mods)
+    description: Status-line bar showing what fills the Claude Code context window, one color per category, refreshed each turn and after compaction.
+    category: Claude plugin (hook-based status line)
+    primary_domain: OBS
+    secondary_domains: [CONTEXT, DX]
+    source: https://github.com/hamzafer/claude-code-mods/tree/main/mods/context-bar
+    installation_status: installed
+    compatible: true
+    last_reviewed: "2026-11-01"
+    installation_location: "User scope (claude plugin marketplace add hamzafer/claude-code-mods, then claude plugin install context-bar@claude-code-mods)."
+    security_status: "SkillSpector scan (--no-llm): score 0/100, severity LOW, no issues found. CAUTION recommendation was from partial analyzer coverage (small TS plugin, some analyzers degraded/not-applicable), not a finding."
+    decision: "Installed 2026-11-01 at user's instruction. Toggle with /context-bar."
+
+  - id: switchboard
+    name: switchboard (hamzafer/claude-code-mods)
+    description: Routes Claude Code subagents that don't name a model to a cheaper one automatically (haiku/sonnet/opus/fable ladder), shows per-subagent cost.
+    category: Claude plugin (hook-based model router)
+    primary_domain: ORCH
+    secondary_domains: [CONTEXT, DX, FINOPS]
+    source: https://github.com/hamzafer/claude-code-mods/tree/main/mods/switchboard
+    installation_status: not-installed
+    compatible: false
+    last_reviewed: "2026-11-01"
+    security_status: "SkillSpector scan (--no-llm): score 11/100, severity LOW, recommendation CAUTION -- 3 MEDIUM findings (External Transmission, 50% confidence) at hooks/route.ts:57,59 and tests/switchboard.test.tsx:93. Manually reviewed: route.ts sends only the subagent type and a short task label to one of three external classifier APIs (TypeSafe/Vercel AI Gateway/OpenAI, user-configured) to pick the model -- the source's own comment states the full task text (which can hold code/paths/hostnames/keys) is deliberately never sent. Real external data transmission by design, not a leak; needs the user's own API key for the chosen picker to function at all."
+    decision: "Not installed 2026-11-01 -- plugin install failed: manifest uses userConfig.*.options, a schema key this Claude Code version's plugin validator doesn't recognize. Not a security rejection -- a version-compatibility failure. Revisit once the marketplace ships a manifest this CLI version accepts; if/when installed, still requires the user to set up and trust one of the three external picker APIs first (own API key, own data-transmission tradeoff to accept)."
+
+  - id: kaggle-mcp
+    name: kaggle-mcp (54yyyu/kaggle-mcp)
+    description: MCP server bridging Claude to the Kaggle API -- competitions, datasets, kernels/notebooks, models. Exposes an authenticate() tool plus grouped tools per area.
+    category: MCP Server
+    primary_domain: DATA
+    secondary_domains: [ML, INTEGRATION]
+    source: https://github.com/54yyyu/kaggle-mcp
+    installation_status: not-installed
+    compatible: true
+    lifecycle_stages: [data-science, research]
+    relevant_agents: [data-scientist, ml-engineer]
+    last_reviewed: "2026-11-01"
+    security_status: "Not independently scanned (SkillSpector removed from this harness per explicit user instruction). Install path is a curl|sh / iwr|iex shell installer (macOS/Linux and Windows variants) -- review before running, standard caution for any piped installer. Requires a Kaggle account's API credentials: the safe path is ~/.kaggle/kaggle.json (chmod 600, per the project's own docs), NOT the authenticate() tool's inline-key option, which would put the API key in the chat transcript."
+    decision: "Not installed 2026-11-01 -- no active project in this registry does Kaggle/ML-dataset work, so no active-project need per policies/skill-installation-policy.md. Logged for a future project that needs it; install then with the kaggle.json file method, not inline authenticate()."

@@ -42,6 +42,8 @@ Personas in [`.claude/agents/`](.claude/agents/). Invoke the minimum set the tas
 
 See [`.claude/skills/inventory.md`](.claude/skills/inventory.md) for what's actually discovered-and-verified on this account, as of the last audit. Use what's relevant; don't call a tool because it exists. Install authorization: see [`policies/skill-installation-policy.md`](policies/skill-installation-policy.md) -- installing what an active project actually needs doesn't require asking first; a newly-discovered candidate with no active project need does.
 
+Before a substantial task, infer its engineering domain(s) from the task itself (never ask the user to name FE/BE/etc) using [`registry/SKILL_CLASSIFICATION.md`](registry/SKILL_CLASSIFICATION.md), then check `registry/skills.yaml` / `tools.yaml` / `agents.yaml` for entries whose `primary_domain`/`secondary_domains` match. A domain match is a candidate, not an automatic invoke -- confirm the specific skill actually fits before calling it.
+
 ## Harness and registries
 
 Reusable development/quality-engineering modules live in [`harness/`](harness/README.md) -- read its status table before assuming a module is a working engine; several are policy pointers to tools that already exist (platform Agent/Workflow tools, Graphify) rather than new software. Skill/tool/MCP/agent/methodology/model-tier decisions are in [`registry/`](registry/) -- check `last_reviewed` and `decision` fields before trusting an entry as current.
