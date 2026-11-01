@@ -2,6 +2,18 @@
 # Several items in the user's original list were classified here instead of skills.yaml because they are
 # standalone software for a future application, not Harness/Claude-session capabilities.
 tools:
+  - id: obsidian
+    name: Obsidian
+    description: Local-first Markdown knowledge base / graph-view note app. Used here as the viewer for this repo's `knowledge/` vault and for Graphify's per-project Markdown exports.
+    category: Desktop application
+    source: https://obsidian.md
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [knowledge-management, code_intelligence]
+    last_reviewed: "2026-11-01"
+    security_status: "Official installer via winget (Obsidian.Obsidian), verified installer hash. Closed-source but well-established, no network requirement for local vaults."
+    decision: "Installed 2026-11-01 for future projects. `knowledge/` in this repo is the vault; see knowledge/README-obsidian-vault.md for the Graphify-export convention."
+
   - id: img2threejs
     name: Img2ThreeJS
     description: Rebuilds a reference image's object as a procedural, quality-gated Three.js model -- token-efficient image-to-3D.
