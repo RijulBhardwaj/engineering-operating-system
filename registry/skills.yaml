@@ -108,27 +108,42 @@ skills:
 
   - id: ui-ux-pro-max
     name: UI UX Pro Max
-    description: Design-intelligence skill for professional UI/UX across platforms.
-    category: Claude Skill
+    description: Design-intelligence skill for professional UI/UX across platforms -- 79 styles, 192 palettes, 74 font pairings, 25 charts, 22 stack guidelines.
+    category: Claude Plugin
     source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-    installation_status: not-installed
+    installation_status: installed
+    installation_location: Claude plugin marketplace (ui-ux-pro-max@ui-ux-pro-max-skill), user scope
     compatible: true
     lifecycle_stages: [frontend, design]
-    last_reviewed: "2026-10-31"
-    security_status: "143211 stars reported -- implausible, unverified."
-    decision: "Not installed. No active frontend/design project on this account. Revisit when one exists."
+    last_reviewed: "2026-11-02"
+    security_status: "143211 stars reported -- implausible, unverified. Installed via official plugin marketplace mechanism, no install scripts run."
+    decision: "Installed 2026-11-02 per user's explicit instruction -- fitness-intelligence-platform is now an active frontend project. Supersedes the 2026-10-31 'no active project' deferral."
 
   - id: taste-skill
     name: Taste Skill (tasteskill.dev)
     description: Agent skill for frontend design taste -- art direction, reference images, browser-based self-check instead of generic AI-looking UI.
-    category: Claude Skill
+    category: Claude Plugin
     source: https://github.com/leonxlnx/taste-skill
-    installation_status: not-installed
+    installation_status: installed
+    installation_location: Claude plugin marketplace (taste-skill@taste-skill), user scope
     compatible: true
     lifecycle_stages: [frontend, design]
-    last_reviewed: "2026-10-31"
-    security_status: "Star counts conflict across sources (8.3k-37.4k per third-party write-ups vs 106627 from gh api) -- all unverified. One review notes it can direct edits to any project file, same blast radius as any skill; verify scope before trusting it on a sensitive repo."
-    decision: "Not installed -- no active frontend project."
+    last_reviewed: "2026-11-02"
+    security_status: "Star counts conflict across sources (8.3k-37.4k per third-party write-ups vs 106627 from gh api) -- all unverified. Can direct edits to any project file, same blast radius as any skill -- verify scope before trusting it on a sensitive repo."
+    decision: "Installed 2026-11-02 per user's explicit instruction. Supersedes the 2026-10-31 'no active project' deferral."
+
+  - id: frontend-design
+    name: Frontend Design (Anthropic official)
+    description: Anthropic's official frontend-design skill -- anti-generic-AI-UI guidance (stop defaulting to Inter font / purple gradients), part of the example-skills bundle alongside brand-guidelines, canvas-design, web-artifacts-builder, webapp-testing, theme-factory.
+    category: Claude Plugin
+    source: https://github.com/anthropics/skills
+    installation_status: installed
+    installation_location: Claude plugin marketplace (example-skills@anthropic-agent-skills), user scope
+    compatible: true
+    lifecycle_stages: [frontend, design]
+    last_reviewed: "2026-11-02"
+    security_status: "Official Anthropic-owned repo (anthropics/skills), 186334 stars -- the one entry in this file with a verifiable, trustworthy star count. Installed via official plugin marketplace mechanism."
+    decision: "Installed 2026-11-02 -- found via web search as the most consistently-recommended frontend skill for Claude Code, and the only official/first-party one. Bundle install also brought brand-guidelines, canvas-design, web-artifacts-builder, webapp-testing, theme-factory at no extra cost."
 
   - id: awesome-claude-design
     name: Awesome Claude Design
@@ -159,24 +174,26 @@ skills:
     description: Motion-design skill -- build or audit UI animation, distilled from named designers' published work.
     category: Claude Skill
     source: https://github.com/kylezantos/design-motion-principles
-    installation_status: not-installed
+    installation_status: installed
+    installation_location: "~/.claude/skills/design-motion-principles (manual copy -- repo has no .claude-plugin marketplace)"
     compatible: true
     lifecycle_stages: [frontend, design]
-    last_reviewed: "2026-10-31"
+    last_reviewed: "2026-11-02"
     security_status: "1466 stars, pushed 2026-05-30 -- plausible, moderately maintained."
-    decision: "Not installed -- no active frontend project. Legitimate, narrowly-scoped candidate when one exists."
+    decision: "Installed 2026-11-02 per user's explicit instruction. Supersedes the 2026-10-31 'no active project' deferral."
 
   - id: transitions-dev
     name: transitions.dev
-    description: Copy-paste CSS transition snippet library, not a JS framework; companion Transitions Polish skill audits existing animation against its token scale.
-    category: Design Reference
-    source: "https://transitions.dev/ (agent skill at https://github.com/Jakubantalik/transitions.dev)"
-    installation_status: not-installed
+    description: Copy-paste CSS transition snippet library skills -- transitions-dev (component transitions), transitions-polish (audit existing motion against its token scale), transitions-ui-generation.
+    category: Claude Skill
+    source: "https://transitions.dev/ (skills at https://github.com/Jakubantalik/transitions.dev/tree/main/skills)"
+    installation_status: installed
+    installation_location: "~/.claude/skills/{transitions-dev,transitions-polish,transitions-ui-generation} (manual copy, sparse-checkout of skills/ -- parent repo is a full product website, not a plugin marketplace)"
     compatible: true
     lifecycle_stages: [frontend]
-    last_reviewed: "2026-10-31"
+    last_reviewed: "2026-11-02"
     security_status: "514 stars / 24 forks per one secondary source, last push 2026-04-25 -- plausible and consistent, unlike most other entries here."
-    decision: "Not installed -- no active frontend project. Low-risk reference if one appears."
+    decision: "Installed 2026-11-02 per user's explicit instruction. Supersedes the 2026-10-31 'no active project' deferral."
 
   - id: anatomy
     name: Anatomy
