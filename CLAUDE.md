@@ -20,12 +20,13 @@ A project's own CLAUDE.md may add constraints. It may not silently override a se
 4. Check [`observability/progress/`](observability/progress/) for the latest checkpoint on this project.
 5. Resume from last verified state. Don't re-derive what the checkpoint already answers.
 
-Don't load the whole knowledge base every session — pull only what the task needs.
+Don't load the whole knowledge base every session — pull only what the task needs. `knowledge/` is an Obsidian vault (second brain, not a flat notes dump) — start at [`knowledge/00-Home.md`](knowledge/00-Home.md), follow `[[wikilinks]]` to what's relevant, and when you learn something worth keeping across sessions, add a linked note from `knowledge/_templates/` rather than appending unlinked prose. See [`knowledge/README-obsidian-vault.md`](knowledge/README-obsidian-vault.md).
 
 ## Rules (detailed)
 
 - [`.claude/rules/engineering-principles.md`](.claude/rules/engineering-principles.md)
 - [`.claude/rules/architecture.md`](.claude/rules/architecture.md) — AI SDLC + spec-driven + ADR gate (mandatory for non-trivial work)
+- [`.claude/rules/system-design-patterns.md`](.claude/rules/system-design-patterns.md) — rate limiting, consistent hashing, CAP, indexes, idempotency, circuit breakers, websockets, pub/sub, sagas, leader election checklist
 - [`.claude/rules/coding-standards.md`](.claude/rules/coding-standards.md)
 - [`.claude/rules/testing.md`](.claude/rules/testing.md)
 - [`.claude/rules/security.md`](.claude/rules/security.md)

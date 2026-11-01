@@ -21,3 +21,16 @@ cp "<project-path>/graphify-out/GRAPH_REPORT.md" "knowledge/graphify-exports/<pr
 ## Convention for future projects
 
 When starting a new project through this harness, link or summarize its Graphify output here the same way once a graph exists for it. Don't pre-create empty per-project files -- add one only when that project actually has a graph to show.
+
+## Second-brain convention
+
+Start at [[00-Home]] -- it's the vault's MOC (map of content), linking every category and every project note. The point isn't "notes exist," it's that they're linked: a flat folder of unconnected Markdown files is what `knowledge/` already was before Obsidian. What Obsidian adds is only useful if notes actually reference each other.
+
+**Every new note:**
+1. Created from a template in `_templates/` (`note.md` for a lesson/solution/troubleshooting entry, `project.md` for a project's home note) -- `Ctrl+T` in Obsidian, or copy by hand if the Templates plugin isn't enabled yet (one-time manual step below).
+2. Carries frontmatter: `type` (`lesson` / `project` / `index`), `project`, `tags`, `date`. This is what makes the vault queryable later (Obsidian search/Dataview-style filtering by `type:`), not just full-text-greppable.
+3. Has at least one `[[wikilink]]` to an existing note -- the taxonomy category it generalizes into, the project it came from, or a related lesson. An unlinked note is an orphan in the graph view and defeats the point.
+
+**Per-project home notes** live in `projects/<project-name>.md` (template: `project.md`), one per project this harness actively tracks. It links out to that project's lessons, decisions, and its `graphify-exports/<project-name>.md` entry once one exists -- the single place to land on to see everything the harness knows about a project. Still following `projects/README.md`'s isolation rule: this is a links-and-summaries hub, not a copy of project-specific code, secrets, or full session detail.
+
+**One-time manual step:** the Templates plugin ships with Obsidian core but isn't enabled by default in a fresh vault. Settings -> Core plugins -> enable "Templates" -> set "Template folder location" to `_templates`. Not scripted here -- it's a local Obsidian preference (lives in `knowledge/.obsidian/`, gitignored, per-machine), not something a file in this repo should set for you.
