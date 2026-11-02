@@ -12,6 +12,9 @@ agents:
   - {id: qa-engineer, file: .claude/agents/qa-engineer.md, model_tier: medium, invoke_when: "test plan beyond unit tests, regression characterization", primary_domain: QA, secondary_domains: [TEST, E2E, AUTOMATION]}
   - {id: code-reviewer, file: .claude/agents/code-reviewer.md, model_tier: high, invoke_when: "before merge, anything beyond a trivial change -- never the author", primary_domain: REFACTOR, secondary_domains: [CORE, SEC, ARCH]}
   - {id: technical-writer, file: .claude/agents/technical-writer.md, model_tier: low, invoke_when: "feature ships without docs, or docs drift from behavior", primary_domain: DOCS, secondary_domains: [TECHWRITE, SPEC]}
+  - {id: quality-gatekeeper, file: .claude/agents/quality-gatekeeper.md, model_tier: medium, invoke_when: "before claiming merge-ready/release-ready for anything beyond a trivial change", primary_domain: QA, secondary_domains: [ARCH, SEC, DOCS]}
+  - {id: failure-recovery, file: .claude/agents/failure-recovery.md, model_tier: medium, invoke_when: "an operation has failed more than once, or a process is stalled", primary_domain: CORE, secondary_domains: [DEVOPS]}
+  - {id: audit-evidence, file: .claude/agents/audit-evidence.md, model_tier: medium, invoke_when: "a completion claim (implemented/tested/deployed/secure) needs independent evidence-checking", primary_domain: QA, secondary_domains: [CORE]}
 
 # Model tier policy (applies across all agents above):
 #   low    -- file discovery, mechanical edits, formatting, routine docs

@@ -1,0 +1,6 @@
+{
+  "schema_version": "1.0",
+  "source_of_truth": "model-capabilities.yaml",
+  "note": "model-capabilities.yaml is tier-selection POLICY (model_tiers: haiku/sonnet/...), not a list of discrete capability entries -- does not fit the Part 6.3 per-entry schema. Left as-is in YAML; this JSON file intentionally has no entries array rather than forcing a fake fit.",
+  "entries": []
+}
