@@ -20,12 +20,13 @@ A project's own CLAUDE.md may add constraints. It may not silently override a se
 4. Check [`observability/progress/`](observability/progress/) for the latest checkpoint on this project.
 5. Resume from last verified state. Don't re-derive what the checkpoint already answers.
 
-Don't load the whole knowledge base every session — pull only what the task needs.
+Don't load the whole knowledge base every session — pull only what the task needs. `knowledge/` is an Obsidian vault (second brain, not a flat notes dump) — start at [`knowledge/00-Home.md`](knowledge/00-Home.md), follow `[[wikilinks]]` to what's relevant, and when you learn something worth keeping across sessions, add a linked note from `knowledge/_templates/` rather than appending unlinked prose. See [`knowledge/README-obsidian-vault.md`](knowledge/README-obsidian-vault.md).
 
 ## Rules (detailed)
 
 - [`.claude/rules/engineering-principles.md`](.claude/rules/engineering-principles.md)
 - [`.claude/rules/architecture.md`](.claude/rules/architecture.md) — AI SDLC + spec-driven + ADR gate (mandatory for non-trivial work)
+- [`.claude/rules/system-design-patterns.md`](.claude/rules/system-design-patterns.md) — rate limiting, consistent hashing, CAP, indexes, idempotency, circuit breakers, websockets, pub/sub, sagas, leader election checklist
 - [`.claude/rules/coding-standards.md`](.claude/rules/coding-standards.md)
 - [`.claude/rules/testing.md`](.claude/rules/testing.md)
 - [`.claude/rules/security.md`](.claude/rules/security.md)
@@ -40,6 +41,8 @@ Personas in [`.claude/agents/`](.claude/agents/). Invoke the minimum set the tas
 ## Skills / MCP / tools
 
 See [`.claude/skills/inventory.md`](.claude/skills/inventory.md) for what's actually discovered-and-verified on this account, as of the last audit. Use what's relevant; don't call a tool because it exists. Install authorization: see [`policies/skill-installation-policy.md`](policies/skill-installation-policy.md) -- installing what an active project actually needs doesn't require asking first; a newly-discovered candidate with no active project need does.
+
+Before a substantial task, infer its engineering domain(s) from the task itself (never ask the user to name FE/BE/etc) using [`registry/SKILL_CLASSIFICATION.md`](registry/SKILL_CLASSIFICATION.md), then check `registry/skills.yaml` / `tools.yaml` / `agents.yaml` for entries whose `primary_domain`/`secondary_domains` match. A domain match is a candidate, not an automatic invoke -- confirm the specific skill actually fits before calling it.
 
 ## Harness and registries
 

@@ -2,10 +2,26 @@
 # Several items in the user's original list were classified here instead of skills.yaml because they are
 # standalone software for a future application, not Harness/Claude-session capabilities.
 tools:
+  - id: obsidian
+    name: Obsidian
+    description: Local-first Markdown knowledge base / graph-view note app. Used here as the viewer for this repo's `knowledge/` vault and for Graphify's per-project Markdown exports.
+    category: Desktop application
+    primary_domain: KNOWLEDGE
+    secondary_domains: [CODEINTEL, DX]
+    source: https://obsidian.md
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [knowledge-management, code_intelligence]
+    last_reviewed: "2026-11-01"
+    security_status: "Official installer via winget (Obsidian.Obsidian), verified installer hash. Closed-source but well-established, no network requirement for local vaults."
+    decision: "Installed 2026-11-01 for future projects. `knowledge/` in this repo is the vault; see knowledge/README-obsidian-vault.md for the Graphify-export convention."
+
   - id: img2threejs
     name: Img2ThreeJS
     description: Rebuilds a reference image's object as a procedural, quality-gated Three.js model -- token-efficient image-to-3D.
     category: Software library / CLI tool
+    primary_domain: 3D
+    secondary_domains: [FE]
     source: https://github.com/img2threejs/img2threejs
     installation_status: not-installed
     compatible: true
@@ -18,6 +34,8 @@ tools:
     name: OmniRoute
     description: AI gateway for multi-provider LLMs -- OpenAI-compatible endpoint with routing, load balancing, retries, fallbacks, rate limits, caching, observability.
     category: Infrastructure Platform
+    primary_domain: INFERENCE
+    secondary_domains: [LLM, CLOUD, DEVOPS]
     source: https://github.com/ChrisCompton/omniroute
     installation_status: not-installed
     compatible: true
@@ -30,6 +48,8 @@ tools:
     name: vLLM
     description: High-throughput, memory-efficient LLM inference/serving engine.
     category: Model-serving Infrastructure
+    primary_domain: INFERENCE
+    secondary_domains: [GPU, LLM, RUNTIME]
     source: https://github.com/vllm-project/vllm
     installation_status: not-installed
     compatible: true
@@ -42,6 +62,8 @@ tools:
     name: Context Mode
     description: Context-window optimization for coding agents -- sandboxes tool output (claimed 98% reduction), persists session memory, routes across platforms via MCP + hooks.
     category: MCP server / Claude Plugin
+    primary_domain: CONTEXT
+    secondary_domains: [DX, TOOLING]
     source: https://github.com/mksglu/context-mode
     installation_status: not-installed
     compatible: true
