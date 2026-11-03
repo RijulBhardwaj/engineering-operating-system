@@ -7,6 +7,7 @@ Audited 2026-10-31 from an active Claude Code session on this account. Re-audit 
 | Name | Type | Purpose | Status |
 |---|---|---|---|
 | graphify | Skill | Codebase -> knowledge graph, architecture/dependency queries | Installed, project graph exists for 12_Dimension_Harness |
+| rag-architect | Skill (vendored) | RAG system design: chunking, vector-store selection, hybrid search/reranking, retrieval evaluation (precision@k/recall@k/MRR/NDCG) | Installed 2026-11-03 at harness/skills/rag-architect/. Python-oriented code examples -- use for architecture/methodology guidance, not copy-paste for the TS/pgvector stack projects here actually use. Known bug in its own hybrid-search example: mislabeled as RRF, is actually unnormalized weighted score sum -- see registry/skills.yaml decision field |
 | ecc (ECC marketplace) | Plugin bundle | ~400 skills/agents/commands: reviewers per language, build-resolvers, TDD workflows, orchestration (/orch-*), ADR authoring (architecture-decision-records skill), git-workflow, security-review, etc. | Installed, enabled |
 | agent-skills | Plugin | Addy Osmani's 25 lifecycle skills + 4 agent personas (spec-driven dev, TDD, frontend-ui-engineering, API design, review, security, CI/CD, ADRs, observability) | Installed 2026-10-31 |
 | floorplan | Plugin | Plain-English codebase architecture map + security health check + blueprint-from-spec | Installed 2026-10-31 |
