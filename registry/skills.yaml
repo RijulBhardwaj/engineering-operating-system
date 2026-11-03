@@ -570,3 +570,19 @@ skills:
     last_reviewed: "2026-11-03"
     security_status: "MIT license, verified in repo LICENSE file at fetch time. Pure markdown + Python code examples, no installer script, no network calls on read. Code examples use OpenAI/Qdrant/Cohere/RAGAS Python SDKs -- doesn't match this harness's actual RAG stack where used so far (fitness-intelligence-platform: Supabase pgvector via RPC, Cloudflare Workers AI for embeddings, TypeScript), so treat the Python snippets as illustrative pattern references, not copy-paste code for that project."
     decision: "Installed 2026-11-03, user supplied the URL directly and said to start using it (explicit new-feature-request path in policies/skill-installation-policy.md -- no ask-first needed). Found a real bug while reading the source before registering: SKILL.md's hybrid-search example (Implementation Example 3) comments itself as 'Reciprocal Rank Fusion' but the code is actually a fixed-weight sum of raw, unnormalized dense-cosine and BM25 scores (0.6*dense + 0.4*bm25) -- not RRF (which ranks by 1/(k+rank), not by raw score), and mixing unnormalized scores on different scales will bias results toward whichever metric happens to have the larger range. Use the chunking/evaluation/architecture guidance; don't copy that specific hybrid-search snippet as-is without fixing the fusion method or at minimum min-max normalizing both score arrays first."
+
+  - id: everything-claude-code-mobile
+    name: Everything Claude Code — Mobile
+    description: "Mobile development skills, agents, commands, hooks, and MCP tools for Android, iOS, and Kotlin Multiplatform. Separate marketplace/plugin from the main ecc bundle (different author/repo, not a sub-plugin of affaan-m/everything-claude-code despite the similar name)."
+    category: Claude Plugin
+    primary_domain: MOBILE
+    secondary_domains: [DX, TEST]
+    source: https://github.com/ahmed3elshaer/everything-claude-code-mobile
+    installation_status: installed
+    installation_location: "Claude plugin marketplace (everything-claude-code-mobile@everything-claude-code-mobile), user scope"
+    compatible: true
+    lifecycle_stages: [coding, testing, code-review]
+    relevant_agents: [mobile-engineer]
+    last_reviewed: "2026-11-03"
+    security_status: "MIT license (SPDX id confirmed via GitHub API at fetch time). Not independently source-read line-by-line before install (user gave the exact install commands directly, not a URL to review first) -- flag for an actual-use review pass the first time an agent from this bundle is invoked on a real mobile task."
+    decision: "Installed 2026-11-03, user gave the exact `claude plugin marketplace add` / `claude plugin install` commands directly. Note: the user's own install command named marketplace `affaan-m/everything-claude-code` for the marketplace-add step but the plugin name `everything-claude-code-mobile@everything-claude-code-mobile` for install -- those are two different repos/authors (affaan-m/everything-claude-code is the main ecc bundle, already registered as id 'ecc' above; ahmed3elshaer/everything-claude-code-mobile is the actual mobile plugin's marketplace). Added the correct second marketplace before installing, since the install command would otherwise fail (plugin not found in a marketplace that doesn't declare it) -- confirmed by running it, which errored exactly that way until the right marketplace was added. No active mobile project exists in projects/project-registry.yaml yet -- installed per explicit instruction, not an active-project need; revisit at next registry audit if still unused."
