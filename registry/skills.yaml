@@ -554,3 +554,19 @@ skills:
     last_reviewed: "2026-11-01"
     security_status: "Not independently scanned (SkillSpector removed from this harness per explicit user instruction). Install path is a curl|sh / iwr|iex shell installer (macOS/Linux and Windows variants) -- review before running, standard caution for any piped installer. Requires a Kaggle account's API credentials: the safe path is ~/.kaggle/kaggle.json (chmod 600, per the project's own docs), NOT the authenticate() tool's inline-key option, which would put the API key in the chat transcript."
     decision: "Not installed 2026-11-01 -- no active project in this registry does Kaggle/ML-dataset work, so no active-project need per policies/skill-installation-policy.md. Logged for a future project that needs it; install then with the kaggle.json file method, not inline authenticate()."
+
+  - id: rag-architect
+    name: RAG Architect
+    description: "Designs and implements production RAG systems: requirements analysis, vector-store design, chunking strategy, retrieval pipeline (embeddings, query transformation, hybrid search, reranking), and evaluation/iteration. Reference guides on vector databases, embedding models, chunking, retrieval optimization, RAG evaluation. MUST/MUST-NOT checklist (evaluate chunk size and embeddings on real data, implement hybrid search + reranking for production, measure precision@k/recall@k/MRR/NDCG, idempotent ingestion via deterministic IDs; never ship the default 512 chunk size unevaluated, never rely on cosine similarity alone for multi-domain retrieval)."
+    category: Claude Skill
+    primary_domain: RAG
+    secondary_domains: [DATA, ML, ARCH]
+    source: https://github.com/Jeffallan/claude-skills/blob/main/skills/rag-architect/SKILL.md
+    installation_status: installed
+    installation_location: harness/skills/rag-architect/ (SKILL.md + references/*.md, copied directly from upstream -- this harness has no Claude plugin-marketplace path for a single-skill repo, so it's vendored as a reference module the same way other harness/ modules are)
+    compatible: true
+    lifecycle_stages: [architecture, coding, code-review, testing]
+    relevant_agents: [software-architect, data-scientist, backend-engineer]
+    last_reviewed: "2026-11-03"
+    security_status: "MIT license, verified in repo LICENSE file at fetch time. Pure markdown + Python code examples, no installer script, no network calls on read. Code examples use OpenAI/Qdrant/Cohere/RAGAS Python SDKs -- doesn't match this harness's actual RAG stack where used so far (fitness-intelligence-platform: Supabase pgvector via RPC, Cloudflare Workers AI for embeddings, TypeScript), so treat the Python snippets as illustrative pattern references, not copy-paste code for that project."
+    decision: "Installed 2026-11-03, user supplied the URL directly and said to start using it (explicit new-feature-request path in policies/skill-installation-policy.md -- no ask-first needed). Found a real bug while reading the source before registering: SKILL.md's hybrid-search example (Implementation Example 3) comments itself as 'Reciprocal Rank Fusion' but the code is actually a fixed-weight sum of raw, unnormalized dense-cosine and BM25 scores (0.6*dense + 0.4*bm25) -- not RRF (which ranks by 1/(k+rank), not by raw score), and mixing unnormalized scores on different scales will bias results toward whichever metric happens to have the larger range. Use the chunking/evaluation/architecture guidance; don't copy that specific hybrid-search snippet as-is without fixing the fusion method or at minimum min-max normalizing both score arrays first."
