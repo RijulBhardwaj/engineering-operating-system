@@ -1,6 +1,22 @@
 # Skill registry. Schema: schemas/registry-entry.schema.json
 # last_reviewed dates below are when THIS registry was built/updated, not when the upstream project last shipped.
 skills:
+  - id: egm
+    name: Elephant-Goldfish Model (EGM)
+    description: "Google's open-source design/review plugin: 'Elephant' drafts a specification with full project context (brainstorm -> concepts_brief.md -> draft -> design_draft.md); 'Goldfish' reviewers (fresh subagents, no prior context) independently review the draft against source material to surface unstated assumptions and blind spots before implementation. Human approves the design before code is written."
+    category: Claude Plugin
+    primary_domain: ARCH
+    secondary_domains: [CORE, DX]
+    source: https://github.com/google/elephant-goldfish-model
+    installation_status: installed
+    installation_location: Claude plugin marketplace (egm@egm), added 2026-11-10 per explicit user instruction
+    compatible: true
+    lifecycle_stages: [requirements, architecture, code-review]
+    relevant_agents: [software-architect, code-reviewer]
+    last_reviewed: "2026-11-10"
+    security_status: "Repo confirmed real and maintained under google/ on GitHub before install (not independently security-audited line-by-line). Installed per explicit user instruction, not yet evaluated against a specific project need -- overlaps existing brainstorming/architecture.md gate and dispatching-parallel-agents skills already in this harness; use whichever fits the task, don't invoke both redundantly."
+    notes: "Complements this harness's own architecture.md spec-driven gate and ADR process -- EGM's draft/review loop can feed the PRD/tech-spec/ADR steps rather than replace them. Needs a session that can create fresh subagents for brainstorm/review steps."
+
   - id: graphify
     name: Graphify
     description: Turns a codebase (code, docs, SQL schemas, configs, PDFs) into a queryable knowledge graph via local deterministic AST parsing. Claude Code /graphify skill.
