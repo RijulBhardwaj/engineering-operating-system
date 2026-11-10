@@ -15,6 +15,19 @@ projects:
     last_checkpoint: "2026-10-31: assess command + intake hardening, console encoding fix, interactive CLI menu"
     last_validation_status: unknown -- not re-run during this bootstrap
 
+  - project_id: lynceon-ai
+    name: "Lynceon.ai"
+    repo: "https://github.com/RijulBhardwaj/lynceon-ai"
+    default_branch: main
+    current_branch: main
+    project_type: unknown -- no PRD/stack decided yet
+    technology_stack: []
+    status: planned
+    current_milestone: "Skeleton created, harness-registered. Next: discovery -> PRD -> tech spec -> stack ADR before any code."
+    relevant_skills: []
+    last_checkpoint: "2026-11-10: empty repo + README/CLAUDE.md/docs skeleton, pushed to GitHub, registered here. No implementation."
+    last_validation_status: "n/a -- no code yet"
+
   - project_id: fitness-intelligence-platform
     name: "Fitness Intelligence Platform"
     repo: "https://github.com/RijulBhardwaj/fitness-intelligence-platform"
