@@ -1,6 +1,14 @@
 # MCP servers actually connected in this Claude Code account/session, audited 2026-10-31.
 # This is a snapshot -- re-audit when a new server connects or quarterly.
 mcp_servers:
+  - id: higgsfield
+    name: Higgsfield AI MCP (official, hosted)
+    description: "Image/video generation across Higgsfield's model catalog (Kling, Veo, Sora, Seedance, Wan, and others). Remote HTTP MCP server at https://mcp.higgsfield.ai/mcp, OAuth-authenticated on first real use (no API key stored here). Usage is billed against the user's Higgsfield plan/credits -- this harness never initiates a paid generation itself, only registers the connector."
+    status: "registered 2026-11-10 (claude mcp add --transport http --scope user higgsfield https://mcp.higgsfield.ai/mcp), OAuth not yet completed"
+    source: https://mcp.higgsfield.ai/mcp
+    last_reviewed: "2026-11-10"
+    notes: "Added per explicit user instruction, not yet tied to an active project need. Paid service -- any actual generation call needs the user's own OAuth sign-in and spends their Higgsfield credits; never trigger a generation without the user asking for that specific output."
+
   - id: claude-docs
     name: Claude Docs
     description: Living docs on claude.ai -- create/edit documents from a session.
