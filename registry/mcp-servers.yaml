@@ -1,6 +1,14 @@
 # MCP servers actually connected in this Claude Code account/session, audited 2026-10-31.
 # This is a snapshot -- re-audit when a new server connects or quarterly.
 mcp_servers:
+  - id: getlayers
+    name: GetLayers MCP (official, hosted)
+    description: "Pulls design templates/layers from getlayers.ai into a project. Remote HTTP MCP server at https://mcp.getlayers.ai/mcp."
+    status: "registered 2026-11-11 (claude mcp add, user scope) by the lynceon-ai session. Needs authentication -- GetLayers' docs say the MCP tools require their paid 'Full Stack Lifetime' plan; without it, sign-in won't unlock the tools."
+    source: https://mcp.getlayers.ai/mcp
+    last_reviewed: "2026-11-11"
+    notes: "Added per explicit user instruction. Paid-plan-gated, zero-budget-compatible free route exists: getlayers.ai lets anyone copy a layer's prompt directly (1/day signed out, uncapped with a free account) and paste it in for the agent to build from, without ever needing the MCP tools."
+
   - id: higgsfield
     name: Higgsfield AI MCP (official, hosted)
     description: "Image/video generation across Higgsfield's model catalog (Kling, Veo, Sora, Seedance, Wan, and others). Remote HTTP MCP server at https://mcp.higgsfield.ai/mcp, OAuth-authenticated on first real use (no API key stored here). Usage is billed against the user's Higgsfield plan/credits -- this harness never initiates a paid generation itself, only registers the connector."

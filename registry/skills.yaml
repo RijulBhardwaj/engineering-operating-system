@@ -138,6 +138,33 @@ skills:
     security_status: "Reviewed via WebFetch before install: no install scripts, README doesn't disclose hook contents (adapter has a hooks/ dir of unknown behavior) -- acceptable risk, same tier as ECC which is already trusted on this account. Star count (112091) still implausible/unverified."
     decision: "Installed 2026-10-31 per user's standing authorization for build-helping skills. Overlaps partially with ECC's bundled skills -- use whichever specific skill fits per task, don't invoke both for the same step."
 
+  - id: impeccable
+    name: Impeccable
+    description: Design/redesign/critique/audit/polish/animate skill for frontends -- websites, landing pages, dashboards, app UI, components, native iOS/Android screens, or a design system (DESIGN.md).
+    category: Claude Skill (claude.ai-synced)
+    primary_domain: DESIGN
+    secondary_domains: [UI, FE, UX]
+    source: synced via claude.ai skill sync (syncClaudeAiSkills), not a GitHub-hosted plugin install
+    installation_status: installed
+    installation_location: "~/.claude/skills/synced (v4.8.2), synced 2026-11-11 from the lynceon-ai session per user instruction to add skills from an external post"
+    compatible: true
+    lifecycle_stages: [frontend, design]
+    last_reviewed: "2026-11-11"
+    security_status: "Not independently source-reviewed -- claude.ai-synced skills aren't a raw GitHub clone to audit the same way; same trust tier as other anthropic-skills entries already in this registry."
+    decision: "Installed 2026-11-11 by the lynceon-ai session per explicit user instruction (recreating a list of skills from an external post). Overlaps ui-ux-pro-max/taste-skill/unslop/frontend-design below -- pick whichever fits the task, don't stack."
+
+  - id: react-bits
+    name: React Bits
+    description: Animated/interactive React component library (not a skill/plugin -- no SKILL.md to install).
+    category: Component Library
+    primary_domain: UI
+    secondary_domains: [FE]
+    source: https://reactbits.dev
+    installation_status: not-installed
+    compatible: false
+    last_reviewed: "2026-11-11"
+    decision: "Not installed 2026-11-11 -- nothing for this harness to wire in, it's a component library you pull components from per-project (copy-paste or npm), not a Claude skill/plugin/MCP. Logged as the reference for the next time a project wants its components."
+
   - id: ui-ux-pro-max
     name: UI UX Pro Max
     description: Design-intelligence skill for professional UI/UX across platforms -- 79 styles, 192 palettes, 74 font pairings, 25 charts, 22 stack guidelines.
