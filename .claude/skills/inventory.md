@@ -21,6 +21,7 @@ Audited 2026-10-31 from an active Claude Code session on this account. Re-audit 
 | floorplan | Plugin | Plain-English codebase architecture map + security health check + blueprint-from-spec | Installed 2026-10-31 |
 | ponytail | Plugin | Forces minimal-diff, YAGNI-first solutions | Disabled 2026-10-31, replaced by chisle (not uninstalled) |
 | caveman | Plugin | Terse communication style + cavecrew agents (investigator/builder/reviewer) | Disabled 2026-10-31, replaced by chisle (not uninstalled) |
+| AI Code QA Gate tools (ruff, mypy, bandit, mutmut, pip-audit, pylint, eslint, pyright, stryker) | CLI tools (global installs) | Five-layer QA pipeline tool stack -- see .claude/rules/ai-code-qa-gate.md | Installed 2026-11-24, per explicit user instruction to deploy this pipeline everywhere. mutmut doesn't run natively on Windows (needs WSL) -- report, don't fake. Snyk Code deliberately skipped (paid/account-gated); Semgrep+Bandit+pip-audit/npm audit cover the same ground free |
 | Obscura | CLI tool (local binary) | Rust headless browser (V8, CDP) for JS-rendered page fetch/scrape -- `obscura fetch <url> --eval "<js>"` | Installed 2026-11-24 at harness/tools/obscura/ (gitignored, v0.2.7, plain build, not the stealth/anti-detect variant). Use when WebFetch/WebSearch can't render JS; those stay default otherwise. Never for CAPTCHA/bot-detection evasion |
 | GitHub (gh CLI) | Tool | Repo/PR/issue/branch/Actions operations | Available, authenticated as RijulBhardwaj |
 | Claude Docs (mcp 1a59c906...) | Connector | Living docs on claude.ai | Available |

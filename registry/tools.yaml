@@ -30,6 +30,132 @@ tools:
     security_status: "Apache-2.0, 37k stars, pushed 2026-11-22, cited by Cloudflare's Kitesurf blog post as a real prior project -- verified via `gh repo view`/README before install, not taken on trust from the user's link. Installed the plain `obscura-x86_64-windows.zip` build only (v0.2.7), not the `-stealth` variant -- the stealth/anti-detect build exists upstream but was deliberately not installed here, since this harness fetches public pages for research/scraping, not bot-detection evasion. Binary lives at tools/obscura/ (gitignored, ~150MB, not committed)."
     decision: "Installed 2026-11-24 per explicit user instruction (\"install and use this for web search/scrape from now on\"). Use for programmatic page fetch + JS-eval scraping where WebFetch/WebSearch can't render JS or need CDP-level control; WebFetch/WebSearch remain the default for plain page reads since they need no local binary. Never used for CAPTCHA bypass or bot-detection evasion -- that crosses this harness's own security.md and the platform's prohibited-actions list."
 
+  - id: ruff
+    name: Ruff
+    description: Fast Python linter + formatter (style, unused imports, type-ish issues). Layer 1 (static analysis) of ai-code-qa-gate.md.
+    category: Software library / CLI tool
+    primary_domain: BE
+    secondary_domains: [CORE]
+    source: https://github.com/astral-sh/ruff
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [code-review, ai-code-qa-gate]
+    last_reviewed: "2026-11-24"
+    security_status: "MIT, Astral (ruff/uv maintainer), mainstream."
+    decision: "Installed 2026-11-24 for the ai-code-qa-gate pipeline, per explicit user instruction to deploy that gate everywhere. Global pip --user install."
+
+  - id: mypy
+    name: mypy
+    description: Python static type checker. Layer 1 (static analysis) of ai-code-qa-gate.md.
+    category: Software library / CLI tool
+    primary_domain: BE
+    secondary_domains: [CORE]
+    source: https://github.com/python/mypy
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [code-review, ai-code-qa-gate]
+    last_reviewed: "2026-11-24"
+    security_status: "Official Python typing project."
+    decision: "Installed 2026-11-24 for ai-code-qa-gate.md. Global pip --user install."
+
+  - id: bandit
+    name: Bandit
+    description: Python security linter (SQL injection, hardcoded secrets, unsafe deserialization, etc). Layer covers the free equivalent of Snyk Code for Python.
+    category: Software library / CLI tool
+    primary_domain: SECURITY
+    secondary_domains: [BE]
+    source: https://github.com/PyCQA/bandit
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [security-review, ai-code-qa-gate]
+    last_reviewed: "2026-11-24"
+    security_status: "PyCQA (official Python code-quality org)."
+    decision: "Installed 2026-11-24 for ai-code-qa-gate.md, as the free alternative to the paid/account-gated Snyk Code (zero-budget policy). Global pip --user install."
+
+  - id: mutmut
+    name: mutmut
+    description: Python mutation testing -- mutates code and checks whether tests catch the change, surfacing weak test suites that line coverage alone hides.
+    category: Software library / CLI tool
+    primary_domain: BE
+    secondary_domains: [CORE]
+    source: https://github.com/boxed/mutmut
+    installation_status: installed
+    compatible: false
+    relevant_lifecycle_stages: [testing, ai-code-qa-gate]
+    last_reviewed: "2026-11-24"
+    security_status: "Established mutation-testing tool."
+    decision: "Installed 2026-11-24 for ai-code-qa-gate.md, but does NOT run natively on this Windows machine -- upstream requires WSL. Report this limitation rather than silently skipping the mutation-testing layer for Python; use WSL/a Linux CI runner when that layer genuinely matters for a project."
+
+  - id: pip-audit
+    name: pip-audit
+    description: Official PyPA dependency vulnerability scanner for Python. Free equivalent of Safety for the dependency-audit layer.
+    category: Software library / CLI tool
+    primary_domain: SECURITY
+    secondary_domains: [BE]
+    source: https://github.com/pypa/pip-audit
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [security-review, ai-code-qa-gate]
+    last_reviewed: "2026-11-24"
+    security_status: "Official PyPA (Python Packaging Authority) tool."
+    decision: "Installed 2026-11-24 for ai-code-qa-gate.md. Global pip --user install."
+
+  - id: pylint
+    name: Pylint
+    description: Deeper Python static analysis than Ruff (design/convention checks beyond style). Secondary lint layer.
+    category: Software library / CLI tool
+    primary_domain: BE
+    secondary_domains: [CORE]
+    source: https://github.com/pylint-dev/pylint
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [code-review, ai-code-qa-gate]
+    last_reviewed: "2026-11-24"
+    security_status: "PyCQA."
+    decision: "Installed 2026-11-24 for ai-code-qa-gate.md. Global pip --user install. Ruff covers most of the same ground faster; use Pylint when its deeper design checks matter."
+
+  - id: eslint
+    name: ESLint
+    description: JS/TS linter. Layer 1 (static analysis) of ai-code-qa-gate.md for JS/TS projects.
+    category: Software library / CLI tool
+    primary_domain: FE
+    secondary_domains: [CORE]
+    source: https://github.com/eslint/eslint
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [code-review, ai-code-qa-gate]
+    last_reviewed: "2026-11-24"
+    security_status: "Industry-standard JS linter."
+    decision: "Installed 2026-11-24 (npm install -g) for ai-code-qa-gate.md."
+
+  - id: pyright
+    name: Pyright
+    description: Fast Python type checker (Microsoft). Alternative/complement to mypy.
+    category: Software library / CLI tool
+    primary_domain: BE
+    secondary_domains: [CORE]
+    source: https://github.com/microsoft/pyright
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [code-review, ai-code-qa-gate]
+    last_reviewed: "2026-11-24"
+    security_status: "Microsoft, widely used (also powers Pylance)."
+    decision: "Installed 2026-11-24 (npm install -g) for ai-code-qa-gate.md, alongside mypy -- pick whichever a project already uses."
+
+  - id: stryker
+    name: StrykerJS (@stryker-mutator/core)
+    description: Mutation testing for JS/TS. Fills the mutation-testing layer where Python's mutmut can't run (Windows).
+    category: Software library / CLI tool
+    primary_domain: FE
+    secondary_domains: [CORE]
+    source: https://github.com/stryker-mutator/stryker-js
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [testing, ai-code-qa-gate]
+    last_reviewed: "2026-11-24"
+    security_status: "stryker-mutator org, established mutation-testing project."
+    decision: "Installed 2026-11-24 (npm install -g) for ai-code-qa-gate.md. Invoke per-project via `npx stryker run`."
+
   - id: img2threejs
     name: Img2ThreeJS
     description: Rebuilds a reference image's object as a procedural, quality-gated Three.js model -- token-efficient image-to-3D.
