@@ -30,6 +30,7 @@ Don't load the whole knowledge base every session — pull only what the task ne
 - [`.claude/rules/coding-standards.md`](.claude/rules/coding-standards.md)
 - [`.claude/rules/testing.md`](.claude/rules/testing.md)
 - [`.claude/rules/ai-code-qa-gate.md`](.claude/rules/ai-code-qa-gate.md) — the five-layer QA pipeline + tool stack, triggered by any "audit"/"QA"/"test" request
+- [`.claude/rules/knowledge-wiki-ops.md`](.claude/rules/knowledge-wiki-ops.md) — ingest/query/lint the `knowledge/` vault; Graphify-first for codebase questions
 - [`.claude/rules/security.md`](.claude/rules/security.md)
 - [`.claude/rules/git-workflow.md`](.claude/rules/git-workflow.md)
 - [`.claude/rules/token-efficiency.md`](.claude/rules/token-efficiency.md)
