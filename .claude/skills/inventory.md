@@ -21,6 +21,7 @@ Audited 2026-10-31 from an active Claude Code session on this account. Re-audit 
 | floorplan | Plugin | Plain-English codebase architecture map + security health check + blueprint-from-spec | Installed 2026-10-31 |
 | ponytail | Plugin | Forces minimal-diff, YAGNI-first solutions | Disabled 2026-10-31, replaced by chisle (not uninstalled) |
 | caveman | Plugin | Terse communication style + cavecrew agents (investigator/builder/reviewer) | Disabled 2026-10-31, replaced by chisle (not uninstalled) |
+| Obscura | CLI tool (local binary) | Rust headless browser (V8, CDP) for JS-rendered page fetch/scrape -- `obscura fetch <url> --eval "<js>"` | Installed 2026-11-24 at harness/tools/obscura/ (gitignored, v0.2.7, plain build, not the stealth/anti-detect variant). Use when WebFetch/WebSearch can't render JS; those stay default otherwise. Never for CAPTCHA/bot-detection evasion |
 | GitHub (gh CLI) | Tool | Repo/PR/issue/branch/Actions operations | Available, authenticated as RijulBhardwaj |
 | Claude Docs (mcp 1a59c906...) | Connector | Living docs on claude.ai | Available |
 | Claude Browser (built-in) | Tool | Web research, page reading, dev server preview | Available |

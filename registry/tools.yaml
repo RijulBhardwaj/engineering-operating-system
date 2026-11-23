@@ -16,6 +16,20 @@ tools:
     security_status: "Official installer via winget (Obsidian.Obsidian), verified installer hash. Closed-source but well-established, no network requirement for local vaults."
     decision: "Installed 2026-11-01 for future projects. `knowledge/` in this repo is the vault; see knowledge/README-obsidian-vault.md for the Graphify-export convention."
 
+  - id: obscura
+    name: Obscura
+    description: "Rust headless browser engine (V8, CDP, Puppeteer/Playwright-compatible) for web scraping and AI-agent browsing. Drop-in replacement for headless Chrome -- 30MB/instant-start vs 200MB+/~2s. CLI: `obscura fetch <url> --eval \"<js>\"`."
+    category: Software library / CLI tool
+    primary_domain: DX
+    secondary_domains: [CORE, SECURITY]
+    source: https://github.com/h4ckf0r0day/obscura
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [research, data-collection]
+    last_reviewed: "2026-11-24"
+    security_status: "Apache-2.0, 37k stars, pushed 2026-11-22, cited by Cloudflare's Kitesurf blog post as a real prior project -- verified via `gh repo view`/README before install, not taken on trust from the user's link. Installed the plain `obscura-x86_64-windows.zip` build only (v0.2.7), not the `-stealth` variant -- the stealth/anti-detect build exists upstream but was deliberately not installed here, since this harness fetches public pages for research/scraping, not bot-detection evasion. Binary lives at tools/obscura/ (gitignored, ~150MB, not committed)."
+    decision: "Installed 2026-11-24 per explicit user instruction (\"install and use this for web search/scrape from now on\"). Use for programmatic page fetch + JS-eval scraping where WebFetch/WebSearch can't render JS or need CDP-level control; WebFetch/WebSearch remain the default for plain page reads since they need no local binary. Never used for CAPTCHA bypass or bot-detection evasion -- that crosses this harness's own security.md and the platform's prohibited-actions list."
+
   - id: img2threejs
     name: Img2ThreeJS
     description: Rebuilds a reference image's object as a procedural, quality-gated Three.js model -- token-efficient image-to-3D.
