@@ -13,6 +13,10 @@ Ops: `ingest` (new source/page added or existing page meaningfully updated), `qu
 
 Source: user-supplied `llm-wiki.md` (pattern doc, no attribution needed -- it's explicitly meant to be handed to an agent). Added `index.md` (this vault didn't have a content-oriented catalog before -- `00-Home.md` served as MOC but wasn't a flat catalog) and this `log.md`. New rule [[../. claude/rules/knowledge-wiki-ops|knowledge-wiki-ops.md]] codifies ingest/query/lint operations and mandates: every substantial session's work gets filed here, Graphify is checked/used before manually re-deriving codebase structure (token efficiency), and `index.md` is read before drilling into pages.
 
+## [2026-11-24] ingest | vault restructured into raw/wiki/output
+
+Source: user-shown reference screenshot (reel by chase.h.ai) of a `vault/{raw,wiki,output}` layout with `wiki/_master-index.md` and per-topic `_index.md` files. Moved every existing folder (`profile/`, `technical-stack/`, `lessons-learned/`, `reusable-solutions/`, `troubleshooting/`, `projects/`, `graphify-exports/`) under `wiki/`, renamed each category's `README.md`/`taxonomy.md` to `_index.md`, renamed `index.md` to `wiki/_master-index.md`. Added `raw/` (inbox) and `output/` (generated deliverables) as new top-level folders, and `wiki/claude-harness/_index.md` -- an in-vault catalog of this harness's own `.claude/rules/*.md`, per the user's instruction to "put .claude into it... so all claude uses obsidian as a second brain." All cross-references (`00-Home.md`, `README-obsidian-vault.md`, `knowledge-wiki-ops.md`) updated to the new paths. Done with `git mv` to preserve history.
+
 ## [2026-11-24] ingest | AI Code QA Gate tools
 
 ruff, mypy, bandit, mutmut, pip-audit, pylint, eslint, pyright, stryker installed globally. New rule `.claude/rules/ai-code-qa-gate.md`. mutmut doesn't run natively on Windows -- needs WSL (user installing WSL as of this entry, not yet confirmed done).

@@ -1,6 +1,14 @@
 # Obsidian Vault
 
-`knowledge/` (this folder) is an Obsidian vault. Open it directly in Obsidian -- "Open folder as vault" -> pick `knowledge/`. No separate vault folder was created; the existing Markdown knowledge base (`engineering-notes/`, `lessons-learned/`, `profile/`, `reusable-solutions/`, `technical-stack/`, `troubleshooting/`) is the vault as-is.
+`knowledge/` (this folder) is an Obsidian vault. Open it directly in Obsidian -- "Open folder as vault" -> pick `knowledge/`.
+
+## Three-layer structure (adopted 2026-11-24, llm-wiki pattern)
+
+- **`raw/`** -- inbox for unprocessed sources (articles, clips, transcripts). Immutable; read-only once added.
+- **`wiki/`** -- the LLM's domain, auto-maintained. Topic folders (`profile/`, `technical-stack/`, `lessons-learned/`, `reusable-solutions/`, `troubleshooting/`, `projects/`, `graphify-exports/`, `claude-harness/`), each with its own `_index.md`. `wiki/_master-index.md` is the table of contents across all topics.
+- **`output/`** -- generated deliverables for a specific ask (query results, slide decks) -- not general knowledge, that belongs in `wiki/`.
+
+Full operating rules (ingest/query/lint, Graphify-first): `.claude/rules/knowledge-wiki-ops.md`.
 
 ## Why here, not a new folder
 
@@ -8,12 +16,12 @@ This repo already treats `knowledge/` as committed, shared Markdown (see `README
 
 ## Graphify integration
 
-`graphify-exports/` holds one Markdown file per project this harness has run Graphify against: `<project-name>.md`, copied from that project's `graphify-out/GRAPH_REPORT.md` after a graph is built. `graph.json` / `graph.html` stay in the project's own `graphify-out/` (not Markdown, not duplicated here) -- link to them from the copied report instead of inlining.
+`wiki/graphify-exports/` holds one Markdown file per project this harness has run Graphify against: `<project-name>.md`, copied from that project's `graphify-out/GRAPH_REPORT.md` after a graph is built. `graph.json` / `graph.html` stay in the project's own `graphify-out/` (not Markdown, not duplicated here) -- link to them from the copied report instead of inlining.
 
 This is a manual copy step, not an automated sync -- no file watcher or hook was added. Run it after building/refreshing a project's Graphify graph:
 
 ```bash
-cp "<project-path>/graphify-out/GRAPH_REPORT.md" "knowledge/graphify-exports/<project-name>.md"
+cp "<project-path>/graphify-out/GRAPH_REPORT.md" "knowledge/wiki/graphify-exports/<project-name>.md"
 ```
 
 **Why manual:** Graphify runs per-project, on demand, not on every commit -- a hook watching for `graphify-out/` changes would fire on stale or half-built graphs. Revisit if exports start getting forgotten in practice.
@@ -31,6 +39,6 @@ Start at [[00-Home]] -- it's the vault's MOC (map of content), linking every cat
 2. Carries frontmatter: `type` (`lesson` / `project` / `index`), `project`, `tags`, `date`. This is what makes the vault queryable later (Obsidian search/Dataview-style filtering by `type:`), not just full-text-greppable.
 3. Has at least one `[[wikilink]]` to an existing note -- the taxonomy category it generalizes into, the project it came from, or a related lesson. An unlinked note is an orphan in the graph view and defeats the point.
 
-**Per-project home notes** live in `projects/<project-name>.md` (template: `project.md`), one per project this harness actively tracks. It links out to that project's lessons, decisions, and its `graphify-exports/<project-name>.md` entry once one exists -- the single place to land on to see everything the harness knows about a project. Still following `projects/README.md`'s isolation rule: this is a links-and-summaries hub, not a copy of project-specific code, secrets, or full session detail.
+**Per-project home notes** live in `wiki/projects/<project-name>.md` (template: `project.md`), one per project this harness actively tracks. It links out to that project's lessons, decisions, and its `wiki/graphify-exports/<project-name>.md` entry once one exists -- the single place to land on to see everything the harness knows about a project. Still following `wiki/projects/_index.md`'s isolation rule: this is a links-and-summaries hub, not a copy of project-specific code, secrets, or full session detail.
 
 **One-time manual step:** the Templates plugin ships with Obsidian core but isn't enabled by default in a fresh vault. Settings -> Core plugins -> enable "Templates" -> set "Template folder location" to `_templates`. Not scripted here -- it's a local Obsidian preference (lives in `knowledge/.obsidian/`, gitignored, per-machine), not something a file in this repo should set for you.
