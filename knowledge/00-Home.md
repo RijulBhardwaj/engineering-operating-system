@@ -9,6 +9,8 @@ Entry point. Start here, follow links -- don't grep the folder tree.
 
 ## Map
 
+- [[index]] -- content catalog, read before drilling into any page (token efficiency)
+- [[log]] -- chronological ingest/query/lint record
 - [[profile/engineering-profile]] -- verified facts about the user
 - [[technical-stack/taxonomy]] -- category index; lessons link in here once generalized
 - [[lessons-learned/README]]
