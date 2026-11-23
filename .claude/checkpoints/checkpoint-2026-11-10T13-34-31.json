@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-10T13:34:31.786Z",
+  "projectRoot": "C:\\Coding Projects\\engineering-operating-system",
+  "instincts": {
+    "instincts": [],
+    "version": "1.0",
+    "lastUpdated": null
+  },
+  "gitBranch": "main",
+  "lastFiles": [
+    ".claude/skills/inventory.md",
+    "knowledge/.obsidian/workspace.json",
+    "projects/project-registry.yaml",
+    "registry/mcp-servers.yaml",
+    "registry/skills.yaml"
+  ]
+}

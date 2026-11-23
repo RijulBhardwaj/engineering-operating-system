@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-11-04T09:16:41.761Z",
+  "projectRoot": "C:\\Coding Projects\\engineering-operating-system",
+  "instincts": {
+    "instincts": [],
+    "version": "1.0",
+    "lastUpdated": null
+  },
+  "gitBranch": "main",
+  "lastFiles": [
+    ".claude/rules/git-workflow.md",
+    ".claude/skills/inventory.md",
+    "harness/skills/git-worktree/SKILL.md",
+    "harness/skills/unslop/LICENSE",
+    "harness/skills/unslop/SKILL.md",
+    "harness/skills/unslop/agents/openai.yaml",
+    "harness/skills/unslop/references/effects.md",
+    "harness/skills/unslop/references/refs.md",
+    "harness/skills/unslop/references/refs/beacon-engraving.webp",
+    "harness/skills/unslop/references/refs/meadow-3d.webp",
+    "harness/skills/unslop/references/refs/story-dashboard-frames.webp",
+    "harness/skills/unslop/references/refs/unslop-dashboard-after.webp",
+    "harness/skills/unslop/references/refs/unslop-hero-after.webp",
+    "harness/skills/unslop/references/signs.md",
+    "harness/skills/unslop/references/tokens.md",
+    "harness/skills/unslop/references/visuals.md",
+    "harness/skills/unslop/scripts/snapshot.mjs",
+    "harness/skills/unslop/scripts/story.mjs",
+    "knowledge/.obsidian/workspace.json",
+    "registry/skills.yaml"
+  ]
+}
