@@ -7,17 +7,11 @@ tags: [moc]
 
 Entry point. Start here, follow links -- don't grep the folder tree.
 
-## Map
+Three layers, per the llm-wiki pattern (`.claude/rules/knowledge-wiki-ops.md`):
 
-- [[index]] -- content catalog, read before drilling into any page (token efficiency)
-- [[log]] -- chronological ingest/query/lint record
-- [[profile/engineering-profile]] -- verified facts about the user
-- [[technical-stack/taxonomy]] -- category index; lessons link in here once generalized
-- [[lessons-learned/README]]
-- [[reusable-solutions/README]]
-- [[troubleshooting/README]]
-- [[graphify-exports]] -- per-project Graphify reports
-- [[projects]] -- per-project home notes
+- **[[raw/README|raw/]]** -- your inbox, dump anything here, immutable once added.
+- **[[wiki/_master-index|wiki/]]** -- the LLM's domain, auto-maintained. Start at `wiki/_master-index.md`.
+- **[[output/README|output/]]** -- query results and generated deliverables (reports, slide decks).
 
 ## Convention
 

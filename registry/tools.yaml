@@ -156,6 +156,34 @@ tools:
     security_status: "stryker-mutator org, established mutation-testing project."
     decision: "Installed 2026-11-24 (npm install -g) for ai-code-qa-gate.md. Invoke per-project via `npx stryker run`."
 
+  - id: kami
+    name: Kami (tw93/kami)
+    description: "Claude Code skill/plugin giving AI agents layout rules + nine templates for PDF/PNG/editable-PPTX output (resume, one-pager, slides, letter, changelog, social cards, etc)."
+    category: Claude Plugin
+    primary_domain: DX
+    secondary_domains: [DESIGN]
+    source: https://github.com/tw93/Kami
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [documentation, delivery]
+    last_reviewed: "2026-11-24"
+    security_status: "MIT, 12.6k stars, pushed 2026-11-21. Installed via Claude Code's own plugin marketplace mechanism (`claude plugin marketplace add tw93/kami` + `claude plugin install kami@kami`)."
+    decision: "Installed 2026-11-24 per explicit user instruction. Helper scripts are Bash and WeasyPrint needs GTK/Pango -- the README says run it inside WSL on Windows. WSL is not yet installed on this machine (user is installing it separately, see knowledge/log.md) -- Kami's templates/rules load fine, but its font-recovery/rendering helper scripts won't run natively until WSL is ready."
+
+  - id: fpdf2
+    name: fpdf2 (py-pdf/fpdf2)
+    description: Pure-Python PDF generation library (fork of PyFPDF) -- text, tables, images, fonts, no external renderer dependency.
+    category: Software library / CLI tool
+    primary_domain: BE
+    secondary_domains: [DOCUMENTS]
+    source: https://github.com/py-pdf/fpdf2
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [reporting, documents]
+    last_reviewed: "2026-11-24"
+    security_status: "LGPL-3.0, long-running py-pdf org project, mainstream PyFPDF successor."
+    decision: "Installed 2026-11-24 per explicit user instruction, earmarked for fitness-intelligence-platform. Flag: that project is pure TypeScript/Cloudflare Workers (no Python anywhere in the repo), and per the fitness-ai session's last report, PDF export already works there (a working Download-PDF button was confirmed). fpdf2 can't plug into a Workers/TS stack directly -- it needs a Python runtime. Available globally for any project that does run Python; using it in fitness-intelligence-platform specifically needs either a Python worker/service added to that project (an architecture decision for that project's own session, not this harness) or dropping fpdf2 in favor of the TS-side library already generating PDFs there."
+
   - id: img2threejs
     name: Img2ThreeJS
     description: Rebuilds a reference image's object as a procedural, quality-gated Three.js model -- token-efficient image-to-3D.
