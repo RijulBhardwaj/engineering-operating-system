@@ -29,6 +29,14 @@ Installed Obscura (Rust headless browser) at `tools/obscura/` for JS-rendered pa
 
 Added `.claude/hooks/session-start.js` + a `SessionStart` hook in `~/.claude/settings.json` so this harness's `CLAUDE.md` loads into every session automatically, not just when a model chooses to read the pointer. Verified firing on session resume.
 
+## [2026-11-24] ingest | PreCompact hook -- mechanical half of knowledge-wiki-ops.md
+
+Added `.claude/hooks/pre-compact-wiki-reminder.js` + a `PreCompact` hook in `~/.claude/settings.json`. Fires automatically before every compaction in every project, reminding the session to file substantial work into the vault before context is lost. Deliberately not a hard Stop-hook block -- `Stop` fires at the end of every turn, not just task completion, so blocking there would interrupt normal multi-step work constantly.
+
+## [2026-11-24] ingest | git-workflow.md: checkout -b stale-ref gotcha
+
+Fitness Intelligence Platform session hit a real failure mode backfilling its own vault page (PR #31): `git checkout -b <name>` silently checked out a stale same-named `origin/<name>` ref instead of branching from current `main`, landing the first commit on local `main`. Caught before any push; fixed by moving the commit to a correctly-named branch and resetting `main`. Documented in `.claude/rules/git-workflow.md` so future sessions check for the collision before reusing a branch name.
+
 ## [2026-11-24] ingest | fitness-intelligence-platform vault page backfilled
 
 Created `knowledge/wiki/projects/fitness-intelligence-platform.md` (first vault page for this project). Summarizes the stack, key ADRs, and the live production outage found+fixed this session (Cloudflare silently deprecated the deployed Workers AI model, killing chat; caught by a new automated RLS-isolation test, fixed by switching to a non-reasoning instruct model after three reasoning-model replacements all reproduced the same hidden-token-starvation failure). Also linked from `graphify-exports/fitness-intelligence-platform.md` (export already existed). Found `knowledge/wiki/projects/_index.md` had no actual per-project link list despite the convention doc implying one (neither this page nor `lynceon-ai.md` was linked from anywhere) -- added a `## Projects` list there with both.

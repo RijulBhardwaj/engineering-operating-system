@@ -6,6 +6,8 @@ Commits: Conventional Commits (feat, fix, docs, test, refactor, perf, build, ci,
 
 PR flow: branch, implement, lint/format/typecheck, tests, security scan, review diff for secrets/generated files, push, PR, CI green, review, merge. Never force-push over a protected branch. Never disable a CI check to force a merge -- fix the underlying issue.
 
+**`git checkout -b <name>` gotcha:** if a stale `origin/<name>` ref already exists (an old branch of the same name, deleted locally but still known from a prior fetch), git's DWIM behavior can silently check that ref out instead of branching fresh from current `main` -- "already exists" is not the only failure mode. A commit made this way lands wherever that stale ref pointed, which can be `main` itself if the name collision happens to resolve there. Before `checkout -b` with a branch name you've used before in this repo, check `git branch -vv` / `git ls-remote --heads origin <name>` for a collision, or just pick a name with a timestamp/suffix when reusing a pattern (`fitness-vault-backfill-20261124` style). If you do land a commit somewhere unintended: don't force-push to fix it -- move the commit to a correctly named branch, reset the wrong ref back to its upstream, verify the diff is exactly what you intended, then push and PR normally.
+
 Full detail and exceptions: policies/branch-protection.md, policies/commit-policy.md.
 
 ## Worktrees
