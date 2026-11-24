@@ -1,0 +1,31 @@
+# Animation Style Mapping
+
+Maps the viral "Claude animation style" list to whichever tool in this toolkit already renders it. Grouped by mechanism, not a 1:1 style-to-tool list -- a style already achievable with an existing, installed tool gets no new install; only genuine gaps add one.
+
+## CSS/SVG motion styles -- Remotion + GSAP/Motion Design skills (already installed, no new tool)
+
+Flat Vector, Flat 2D, Minimal Line, Isometric, Paper collage, Swiss, Bauhaus, Memphis, Glassmorphism, Y2K chrome, Risograph, Vaporwave, Synthwave, Glitch, Particles, Neobrutalism, Kinetic type, Pop art, Line art, Low poly.
+
+All of these are 2D compositions (flat color, vector shape, typographic, or stylized-filter looks) animated with CSS/SVG transforms, filters and timelines -- exactly what Remotion (the composition/render engine) plus the `gsap-core`/`gsap-timeline`/`gsap-scrolltrigger`/`design-motion-principles` skills already cover. No renderer gap.
+
+## Hand-drawn / toy / stylized -- `example-skills:algorithmic-art` + GSAP (already installed, no new tool)
+
+ChalkBoard, Glow Sketch, Comic Art, Pixel Art, Lego Style, Clay 3D, PS2 Style.
+
+These are rendering-style choices (sketch/chalk texture, pixel grid, toy-brick/clay shading, low-fidelity PS2-era look) achievable as generative/procedural art + motion, not a distinct 3D pipeline -- `example-skills:algorithmic-art` for the generative look, GSAP for the motion. No renderer gap.
+
+## True 3D -- needs a real 3D renderer (Three.js skill installed 2026-11-24)
+
+CGI Motion, Explainer 3D, 3D Data Chart, Glow Atom.
+
+Remotion/CSS can fake flat or pseudo-isometric looks, but cannot genuinely render lit, lensed, camera-moved 3D geometry -- these four styles specifically need a real 3D scene graph and renderer. **Reversal of an earlier decision**: a Three.js skill was previously skipped in this project as unnecessary for diagram-only content; these named styles are the concrete need that justifies installing it now. Installed globally via `npx skills add -g cloudai-x/threejs-skills@threejs-fundamentals` (see `registry/tools.yaml`). Blender MCP was considered and **not installed** -- full 3D modeling/sculpting is overkill for motion-graphics-style 3D that a Three.js scene in a Remotion composition already covers.
+
+## Math/diagram explainer -- Manim skill (installed this same pass)
+
+Math Diagram, Cartoon Explainer, Domino Reveal.
+
+3Blue1Brown-style math/code animation and sequential reveal animations are exactly what the Manim skill (`manimce-best-practices`, `manimgl-best-practices`, `manim-composer`) covers -- see `registry/tools.yaml`'s `manim-skill` entry and this toolkit's README. No separate tool.
+
+## Supporting tool: Text-to-Lottie (installed 2026-11-24)
+
+Not a style on the list itself, but the vector/icon-reveal look used by several styles above (Flat Vector, Minimal Line, Kinetic type) benefits from generating actual Lottie/JSON vector animations instead of hand-coding every keyframe. Installed globally via `npx skills add -g diffusionstudio/lottie@text-to-lottie` -- previously listed as optional/tier-2, promoted to installed now since it's lightweight and the Flat-Vector-style group above directly benefits.

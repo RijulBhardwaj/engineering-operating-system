@@ -264,3 +264,87 @@ tools:
     last_reviewed: "2026-10-31"
     security_status: "32984 stars reported -- implausible, unverified. Pushed 2026-10-31 -- repo active. MCP + hooks means real tool-call interception, a higher trust bar than a plain markdown skill; needs a source read before install, not done this pass."
     decision: "Not installed. Overlaps with ponytail/caveman/token-efficiency.md already in place; adding a second context-interception layer without a measured problem is scope creep."
+
+  - id: remotion-superpowers
+    name: remotion-superpowers (Claude Code plugin)
+    description: Script/scene-plan/voiceover/music/caption orchestration skills on top of Remotion -- create-video, create-short, add-voiceover, add-captions, add-music, add-transitions, review-video, remotion-production, setup.
+    category: Claude Plugin
+    primary_domain: VIDEO
+    secondary_domains: [FE, CONTENT]
+    source: https://remotion.dev
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [content, delivery]
+    last_reviewed: "2026-11-24"
+    security_status: "Official Remotion-affiliated Claude Code plugin, installed via Claude Code's own plugin marketplace mechanism, already account-wide."
+    decision: "Global/shared -- installed once, account-wide, same as GSAP/Motion skills. First consumer is CAT_Guide's video/ workspace (harness/video-generation/), not this harness's own content; the harness's job is the generic setup.sh scaffold, not a specific video."
+
+  - id: kokoro-tts
+    name: Kokoro TTS
+    description: Local, CPU-only, Apache-2.0 text-to-speech engine used for narration/voiceover generation in video pipelines.
+    category: Software library / CLI tool
+    primary_domain: VIDEO
+    secondary_domains: [AUDIO, AI-ML]
+    source: https://github.com/hexgrad/kokoro
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [content, delivery]
+    last_reviewed: "2026-11-24"
+    security_status: "Apache-2.0, CPU-only (no GPU dependency), no network calls at inference time."
+    decision: "Necessarily per-project -- a Python venv (kokoro + soundfile) isolated inside each consuming project's own video/ dir (e.g. CAT_Guide/video/tts-venv), recreated by harness/video-generation/setup.sh rather than centralized here, since each project's voice/compositions are its own. CAT_Guide is the first consumer, not the toolkit's home."
+
+  - id: manim-skill
+    name: Manim skill (adithya-s-k/manim_skill)
+    description: AI-agent skill bundle of best practices and code patterns for Manim Community Edition and ManimGL (3Blue1Brown-style math/diagram animations) -- manimce-best-practices, manimgl-best-practices, manim-composer (scene planning).
+    category: Claude Code Skill
+    primary_domain: VIDEO
+    secondary_domains: [AI-ML, CONTENT]
+    source: https://github.com/adithya-s-k/manim_skill
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [content, delivery]
+    last_reviewed: "2026-11-24"
+    security_status: "MIT. Installed via `npx skills add -g adithya-s-k/manim_skill`, landed in ~/.agents/skills/{manim-composer,manimce-best-practices,manimgl-best-practices} and symlinked into ~/.claude/skills/ -- verified by directory listing, not just the installer's own success message."
+    decision: "Installed 2026-11-24 globally/account-wide (`-g` flag), same mechanism and location as the pre-existing GSAP/Motion skills -- available to any project without a per-project install, since the skill set only needs copying once; only the Remotion/Kokoro per-project state truly can't be shared. Caveat not verified this pass: these are agent-knowledge skills, not the Manim renderer itself -- actually rendering a scene needs `pip install manim` (or `manimgl`), FFmpeg, and a LaTeX distribution (MiKTeX on Windows) installed wherever the render runs, per the skill's own README. No render was attempted and no GPU/LaTeX dependency check was run on this machine; flag this for the first project that actually renders a Manim scene."
+
+  - id: earshot
+    name: earshot
+    description: CPU-only sound-effect synthesis for coding agents -- CLI, Python API and MCP server. Matches a request against a catalogue of ~900 code-rendered designs, or synthesizes/forges a new effect from recorded parts (`earshot forge`/`earshot build`) when nothing in the catalogue fits.
+    category: Software library / CLI tool
+    primary_domain: VIDEO
+    secondary_domains: [AUDIO, AI-ML]
+    source: https://github.com/Leonxlnx/earshot
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [content, delivery]
+    last_reviewed: "2026-11-24"
+    security_status: "MIT. No audio shipped in the repo -- sounds rendered/synthesized at request time from public-domain-recording-trained models. CPU-only, no GPU dependency."
+    decision: "Tier-2 SFX fallback behind Openverse search (openverse.org, free CC-audio API, no key needed for moderate use, no install) -- harness/video-generation/README.md's SFX stage. Needs a CPU build of torch installed first (`pip install torch --index-url https://download.pytorch.org/whl/cpu`) for its listen/forge extras; installed 2026-11-24 via the Windows Store python (`AppData/Local/Microsoft/WindowsApps/python.exe -m pip install --user`), same convention as the Kokoro install, not the parked 12_Dimension_Harness venv. Installed user-scope/global, same tier as remotion-superpowers/GSAP/Motion skills. Verified: `pip show earshot` confirms v1.0.0 installed and `import earshot` succeeds; `earshot.exe` landed in the user Scripts dir (`AppData/Local/Packages/.../LocalCache/local-packages/Python311/Scripts/`), which is not currently on PATH -- a pre-existing condition on this machine, not introduced by this install. pip reported several dependency-version conflict warnings against unrelated pre-existing packages (accelerate/chromadb/tensorflow-intel/torchvision/ultralytics pinning older numpy/torch) -- these are warnings about other tools' pins, not earshot failures; not verified whether they break those other tools, flagged for whoever owns them. A tool named 'Real SFX' seen in an ad could not be verified (no GitHub/docs found) and was not installed."
+
+  - id: threejs-fundamentals-skill
+    name: threejs-fundamentals (Claude Code skill)
+    description: Three.js scene setup -- scenes/fog, cameras, renderer and tone mapping, animation loop, object hierarchies/transforms, core math, cleanup; WebGL or WebGPU+TSL. Used for genuine 3D rendering inside a Remotion composition.
+    category: Claude Code Skill
+    primary_domain: VIDEO
+    secondary_domains: [FE, 3D]
+    source: https://skills.sh/CloudAI-X/threejs-skills
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [content, delivery]
+    last_reviewed: "2026-11-24"
+    security_status: "Installer reports Safe/Low Risk (Socket/Snyk scan shown at install time)."
+    decision: "Installed 2026-11-24 globally via `npx skills add -g cloudai-x/threejs-skills@threejs-fundamentals`, symlinked into ~/.claude/skills/ same as GSAP/Manim. Reverses an earlier decision in this project to skip Three.js as unnecessary for diagram-only content -- the named animation styles CGI Motion/Explainer 3D/3D Data Chart/Glow Atom (harness/video-generation/animation-styles.md) genuinely need a 3D scene graph/renderer that Remotion/CSS cannot fake. Blender MCP deliberately not installed alongside it -- full 3D modeling/sculpting is overkill for motion-graphics-style 3D."
+
+  - id: text-to-lottie-skill
+    name: text-to-lottie (Claude Code skill)
+    description: Creates/edits Lottie (Bodymovin JSON) vector animations for the local Skia Skottie player -- icon/logo/type animation, loaders, microinteractions, diagrams, stat/chart animations.
+    category: Claude Code Skill
+    primary_domain: VIDEO
+    secondary_domains: [FE, DESIGN]
+    source: https://skills.sh/diffusionstudio/lottie
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [content, delivery]
+    last_reviewed: "2026-11-24"
+    security_status: "Installer reports Safe/Med Risk (Socket/Snyk scan shown at install time)."
+    decision: "Installed 2026-11-24 globally via `npx skills add -g diffusionstudio/lottie@text-to-lottie`. Promoted from an earlier optional/tier-2 listing to installed -- lightweight, and directly useful for the Flat-Vector/Minimal-Line/Kinetic-type styles in animation-styles.md that benefit from real vector animation data instead of hand-coded keyframes."

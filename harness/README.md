@@ -25,6 +25,7 @@ Each module below has a README stating what's real, what's policy-only, and what
 | [observability](observability/) | Implemented -- `observability/` directory, manually-written entries |
 | [recovery](recovery/) | Policy -- see process_monitor; no automated recovery daemon |
 | [improvement](improvement/) | Implemented as a manual review procedure -- `scripts/discovery/`, not a cron job |
+| [video-generation](video-generation/) | Verified/working -- generic Remotion + Manim + Kokoro TTS explainer-video pipeline, `setup.sh` scaffolds an independent per-project workspace; see [video-generation/README.md](video-generation/README.md) |
 
 ## Mods (Claude Code's own interface/behavior)
 
