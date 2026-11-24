@@ -29,7 +29,8 @@ Don't load the whole knowledge base every session — pull only what the task ne
 - [`.claude/rules/system-design-patterns.md`](.claude/rules/system-design-patterns.md) — rate limiting, consistent hashing, CAP, indexes, idempotency, circuit breakers, websockets, pub/sub, sagas, leader election checklist
 - [`.claude/rules/coding-standards.md`](.claude/rules/coding-standards.md)
 - [`.claude/rules/testing.md`](.claude/rules/testing.md)
-- [`.claude/rules/ai-code-qa-gate.md`](.claude/rules/ai-code-qa-gate.md) — the five-layer QA pipeline + tool stack, triggered by any "audit"/"QA"/"test" request
+- [`.claude/rules/ai-code-qa-gate.md`](.claude/rules/ai-code-qa-gate.md) — the six-layer QA pipeline + tool stack, triggered by any "audit"/"QA"/"test" request
+- [`.claude/rules/release-review-passes.md`](.claude/rules/release-review-passes.md) — concrete Review Council dispatch prompts (7 passes + live walkthrough + Zapier security baseline), ship/ship-with-conditions/do-not-ship verdict format
 - [`.claude/rules/knowledge-wiki-ops.md`](.claude/rules/knowledge-wiki-ops.md) — ingest/query/lint the `knowledge/` vault; Graphify-first for codebase questions
 - [`.claude/rules/ui-ux-states.md`](.claude/rules/ui-ux-states.md) — 44-state checklist, mandatory for any UI surface
 - [`workflows/end-to-end-development/README.md`](workflows/end-to-end-development/README.md) — master pipeline: stages, artifacts, loop-backs, multi-stream dispatch (one orchestrating session, no agent-spawns-agent), review council, self-optimization

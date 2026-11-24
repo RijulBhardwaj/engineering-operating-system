@@ -11,6 +11,7 @@ Trivial fixes (typo, one-line change) don't need the full gate -- same exception
 3. **Integration tests** -- confirm the new/AI-generated code actually works with existing modules, not just in isolation.
 4. **Peer review** -- logic, naming, security, architectural fit, duplication (AI doesn't know what already exists three directories away). Tag AI-generated code in commits/PRs so review attention goes to security/error-handling/integration, not style.
 5. **Runtime monitoring** -- logging/alerts/observability for regressions post-deploy. (Project-dependent; flag if the project has none.)
+6. **Live walkthrough audit** -- actually run the app (`preview_start`/real run command) and click through every reachable state against `ui-ux-states.md`'s 44-state checklist; screenshot/`read_page`/`read_console_messages`/`read_network_requests` as evidence. None of layers 1-5 touch the running app -- they all read code/diffs. Full detail, the 7 release-review passes it pairs with, and the Zapier baseline checklist (RLS, secrets, access control, server-side-only sensitive logic): `release-review-passes.md`. Mandatory for any UI surface before Gate 6; a pure library/CLI/backend project substitutes an equivalent live run (real CLI/API call) instead of a click-through.
 
 Skip a layer and you create a blind spot -- static analysis alone misses logic errors, tests alone miss naming/duplication. Mutation testing (below) checks whether layer 2 is actually strong, not just present -- a green test suite with weak assertions is false confidence.
 
@@ -42,5 +43,6 @@ Global installs: Python tools via the Windows Store Python at `AppData/Local/Mic
 - [ ] No duplicated logic that already exists elsewhere in the codebase
 - [ ] Naming matches project conventions
 - [ ] Runtime monitoring/alerting exists for the changed path, or its absence is flagged
+- [ ] Live walkthrough done (app actually run and clicked through against `ui-ux-states.md`), or project has no UI surface and an equivalent live CLI/API run was done instead
 
 Report results as evidence (tool output, pass/fail counts), not verbal assurance -- same rule as agent-coordination.md.
