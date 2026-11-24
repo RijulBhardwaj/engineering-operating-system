@@ -4,7 +4,13 @@
 *.key
 *.pem
 node_modules/
+.venv/
 __pycache__/
+# OpenMontage eval clone: a separate git repo (AGPL-3.0) checked out locally for
+# smoke-testing per registry/tools.yaml's `openmontage` entry -- not vendored into
+# this repo's history. Reproduce with: git clone --depth 1
+# https://github.com/calesthio/OpenMontage.git harness/video-generation/_eval/openmontage
+harness/video-generation/_eval/openmontage/
 *.pyc
 .DS_Store
 Thumbs.db
