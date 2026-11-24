@@ -14,3 +14,19 @@
 4. **Goal-driven execution.** Turn a task into a verifiable goal -- e.g. write a test that reproduces a bug before fixing it. For multi-step work, outline the steps with a check for each one, not just a final "done."
 
 Apply with judgment on trivial tasks -- a one-line fix doesn't need a presented-alternatives discussion. Source: https://github.com/multica-ai/andrej-karpathy-skills
+
+### "The goal is met when..." phrasing (adopted 2026-11-24)
+
+Source: Instagram @ceciliakimdesign reel, via explicit user instruction. A concrete technique for rule 4 above, especially for UI/visual asks where vague adjectives ("clean", "premium", "easier to use", "on brand", "smooth") let an AI call anything done. Replace the adjective with a measurable condition before starting work, not after:
+
+- "Make it look clean" -> no info repeats, all spacing is a multiple of 4.
+- "Make it premium" -> every card has a 24pt corner radius, inner elements 16pt, shadows match.
+- "Make it easier to use" -> every tappable target is >=44pt (Apple HIG minimum), nothing clips at max text size.
+- "Make it on brand" -> every screen uses only brand colors, max 2 fonts.
+- "Make errors friendlier" -> every error states what went wrong, why, and what to do next (ties to `ui-ux-states.md` state 5/9).
+- "Add empty states" -> every empty screen has one icon, one sentence on what will appear, one next-step button (state 1).
+- "Make loading better" -> every screen loads with a skeleton of its real layout, no header/tab-bar jump (state 2).
+- "Make it feel smooth" -> small animations finish in ~250ms with a spring, never an abrupt stop.
+- "Make numbers look nicer" -> tabular (fixed-width) digits, so values don't shift width on change.
+
+When the ask implies the whole app, say "every single screen" explicitly in the goal -- otherwise a single-screen fix gets reported as done. This is the same discipline as this file's smallest-correct-change rule and `architecture.md`'s acceptance-criteria requirement: a spec item phrased as a measurable condition, not an adjective, is what review council passes (`release-review-passes.md`) and the QA gate checklist actually check against.
