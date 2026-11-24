@@ -43,6 +43,18 @@ tools:
     security_status: "Apache-2.0, 37k stars, pushed 2026-11-22, cited by Cloudflare's Kitesurf blog post as a real prior project -- verified via `gh repo view`/README before install, not taken on trust from the user's link. Installed the plain `obscura-x86_64-windows.zip` build only (v0.2.7), not the `-stealth` variant -- the stealth/anti-detect build exists upstream but was deliberately not installed here, since this harness fetches public pages for research/scraping, not bot-detection evasion. Binary lives at tools/obscura/ (gitignored, ~150MB, not committed)."
     decision: "Installed 2026-11-24 per explicit user instruction (\"install and use this for web search/scrape from now on\"). WebSearch stays the tool for search queries -- Obscura has no search index, only page-fetch. For fetching a known URL: try WebFetch/web-fetch agent first (no local binary needed); if it returns empty/login-walled/JS-only content, retry with Obscura (`obscura fetch <url> --eval \"<js>\"`) automatically, without asking, before reporting the page unreadable. Never used for CAPTCHA bypass or bot-detection evasion -- that crosses this harness's own security.md and the platform's prohibited-actions list."
 
+  - id: cli-anything
+    name: CLI-Anything
+    description: "Generates structured Python CLI wrappers ('harnesses') around an existing application's real backend/API (e.g. LibreOffice headless, Blender --background, Godot headless, or SaaS APIs with credentials), so an agent calls JSON-structured commands instead of clicking through screenshots. NOT a GUI-clicking/desktop-automation tool -- it is the opposite: it avoids screen-based automation wherever a real backend exists. Claude Code plugin + cli-anything-hub Python package (`cli-hub install <name>` for prebuilt harnesses from the community CLI-Hub registry, `cli-hub search`/`cli-hub list` to browse)."
+    category: Claude Code plugin / CLI tool generator
+    primary_domain: DX
+    secondary_domains: [CORE]
+    source: https://github.com/HKUDS/CLI-Anything
+    installation_status: installed
+    compatible: true
+    last_reviewed: "2026-11-24"
+    decision: "Installed 2026-11-24 per explicit user instruction (\"most important, implement this right now\"). User's framing (\"use it to access apps made for human clickable\") was corrected before install: this tool only wraps apps/services with a real headless backend or API -- it cannot click-automate an arbitrary GUI-only app. For that, this harness already has computer-use/Chrome MCP tools. Use CLI-Anything when a new tool's real backend is wrappable (headless CLI mode, or a documented API with credentials the user provides) and repeated structured calls beat one-off clicking. Harness generation needs a frontier model (Opus/Sonnet) per its own README. No built-in credential-scoping guidance for service-backed harnesses -- scope API keys/credentials manually per this harness's security.md before wrapping any SaaS API."
+
   - id: ruff
     name: Ruff
     description: Fast Python linter + formatter (style, unused imports, type-ish issues). Layer 1 (static analysis) of ai-code-qa-gate.md.
