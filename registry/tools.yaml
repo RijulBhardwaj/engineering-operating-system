@@ -2,6 +2,19 @@
 # Several items in the user's original list were classified here instead of skills.yaml because they are
 # standalone software for a future application, not Harness/Claude-session capabilities.
 tools:
+  - id: egm
+    name: Elephant-Goldfish Model (EGM)
+    description: "Google-authored Claude Code plugin enforcing a two-session design review: one long-context 'elephant' session drafts a design doc, a memoryless 'goldfish' subagent reviews it cold. Used as architecture.md Gate 0 -- the plan-stage gate."
+    category: Claude Code plugin
+    primary_domain: CORE
+    secondary_domains: [DX]
+    source: https://github.com/google/elephant-goldfish-model
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [planning, architecture]
+    last_reviewed: "2026-11-24"
+    decision: "Enabled 2026-11-24 per explicit user instruction (\"especially the first plan stage (follow elephant goldfish model)\"). Was present but disabled in settings since an earlier audit; now wired as the mandatory Gate 0 in architecture.md -- no implementation starts on a plan a fresh goldfish subagent hasn't reviewed."
+
   - id: obsidian
     name: Obsidian
     description: Local-first Markdown knowledge base / graph-view note app. Used here as the viewer for this repo's `knowledge/` vault and for Graphify's per-project Markdown exports.
@@ -28,7 +41,7 @@ tools:
     relevant_lifecycle_stages: [research, data-collection]
     last_reviewed: "2026-11-24"
     security_status: "Apache-2.0, 37k stars, pushed 2026-11-22, cited by Cloudflare's Kitesurf blog post as a real prior project -- verified via `gh repo view`/README before install, not taken on trust from the user's link. Installed the plain `obscura-x86_64-windows.zip` build only (v0.2.7), not the `-stealth` variant -- the stealth/anti-detect build exists upstream but was deliberately not installed here, since this harness fetches public pages for research/scraping, not bot-detection evasion. Binary lives at tools/obscura/ (gitignored, ~150MB, not committed)."
-    decision: "Installed 2026-11-24 per explicit user instruction (\"install and use this for web search/scrape from now on\"). Use for programmatic page fetch + JS-eval scraping where WebFetch/WebSearch can't render JS or need CDP-level control; WebFetch/WebSearch remain the default for plain page reads since they need no local binary. Never used for CAPTCHA bypass or bot-detection evasion -- that crosses this harness's own security.md and the platform's prohibited-actions list."
+    decision: "Installed 2026-11-24 per explicit user instruction (\"install and use this for web search/scrape from now on\"). WebSearch stays the tool for search queries -- Obscura has no search index, only page-fetch. For fetching a known URL: try WebFetch/web-fetch agent first (no local binary needed); if it returns empty/login-walled/JS-only content, retry with Obscura (`obscura fetch <url> --eval \"<js>\"`) automatically, without asking, before reporting the page unreadable. Never used for CAPTCHA bypass or bot-detection evasion -- that crosses this harness's own security.md and the platform's prohibited-actions list."
 
   - id: ruff
     name: Ruff
