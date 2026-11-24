@@ -2,6 +2,8 @@
 
 Mandatory inventory for any UI surface (page, form, flow) before calling frontend work done -- not every state applies to every screen, but each must be a deliberate skip, not an oversight. Source: VikasBuilds "UI & UX Visual Guide" (vikasbuilds.com), ingested 2026-11-24 per user instruction. Pairs with `ai-code-qa-gate.md` layer 2 (unit tests: edge cases) and `architecture.md` Gate 4 (tests pass).
 
+States 1-35 are sourced from the PDF; 36-44 are additions covering common gaps that guide didn't include.
+
 For each state below: when it fires, what to show, what the user must instantly understand, and the one-tap/one-glance test that proves it.
 
 | # | State | Fires when | Must convey | Quick check |
@@ -41,6 +43,15 @@ For each state below: when it fires, what to show, what the user must instantly 
 | 33 | Multi-step form | Long wizard flow | "I know where I am, what's left" | Back preserves every prior field; auto-saved per step |
 | 34 | Accessibility | Any screen, always | "Everyone can read and operate this" | 4.5:1 contrast, 44px+ targets, full aria-labels, no keyboard trap |
 | 35 | Update required | Breaking API/schema/security patch | "One tap updates me" | Store link opens directly to the listing |
+| 36 | Idle/inactivity warning | User inactive near a timeout (session, cart hold, exam) | "I'm about to be timed out, here's how to stay" | Any activity (click/keypress) resets the countdown before it fires |
+| 37 | Drag-and-drop | Dragging a file/item over a drop target | "This is a valid/invalid drop zone, right now" | Invalid drop (wrong file type) gives inline feedback, not a silent no-op |
+| 38 | Read-only vs. edit mode | Viewer lacks edit rights, or record is locked/archived | "I can look but not touch, and I know why" | Edit controls are visibly absent/disabled, not present-but-silently-failing |
+| 39 | Pagination / infinite scroll | More results exist beyond the current page/batch | "More is loading, here's roughly how much is left" | Scrolling to the end triggers load, not a dead stop with no indicator |
+| 40 | Payment redirect (3DS/bank auth) | Checkout hands off to an external bank/OTP page | "I'm leaving to verify, I'll land back where I was" | Returning from the redirect resumes the same cart/order, not a restart |
+| 41 | Quota/usage approaching limit | Nearing a plan/rate/storage cap, not yet blocked | "I'm close to my limit, here's how to avoid hitting it" | Shown before the hard block (rate-limited state), with an upgrade/cleanup path |
+| 42 | Typing/activity indicator | Another user is actively typing/editing live (chat, shared doc) | "Someone else is active right now" | Indicator clears within seconds of the other party stopping, not stuck on |
+| 43 | Theme (dark/light/system) | User or OS toggles color scheme | "The whole UI respects my choice, nothing's left in the wrong theme" | Every component (modals, toasts, charts) follows the switch, none hardcoded light-only |
+| 44 | Feature-gated / beta | Action behind a flag the current user doesn't have | "I know this is limited access, not broken" | Gated UI explains the gate (waitlist/upgrade), never looks like a bug |
 
 ## Universal anti-patterns (apply across all states)
 Blank/dead-end screens with no next action. Raw error codes/stack traces shown to users. Silent failures (success claimed before server confirms). Confirmation-dialog overuse for routine/reversible actions. Losing user input on any transition (error, timeout, reconnect, session expiry).
