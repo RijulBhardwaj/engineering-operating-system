@@ -17,3 +17,5 @@ Rule: never the same agent/session that wrote the code. Flags ADR violations exp
 - **Quality criteria**: findings are specific (file/line, failure scenario), not generic style notes.
 - **Verification**: re-reviews after fixes land, confirms the finding is actually resolved.
 - **Handoff**: back to the original implementing agent for fixes.
+
+For a non-trivial change, this agent runs as one member of the Review Council (parallel domain reviewers + adversarial verification of CONFIRMED findings + quality-gatekeeper pass) rather than the sole reviewer -- see `workflows/end-to-end-development/README.md`'s Review Council section. No single reviewer, including this one, is claimed to catch everything.

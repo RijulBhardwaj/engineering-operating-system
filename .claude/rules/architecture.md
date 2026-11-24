@@ -50,3 +50,5 @@ Source: Google's Elephant-Goldfish Model (EGM), adopted 2026-11-24 per explicit 
 6. Deploy and post-deploy checks pass. Mandatory deliverable: a filled-in templates/setup-and-run/setup-and-run-template.md in the project's own repo -- exact commands to set up, run, test, deploy, and verify it's actually running. Not optional, not generic placeholder text -- the real commands that were actually run for this project.
 
 Automate what can be automated (CI); human sign-off on consequential/irreversible decisions.
+
+Full stage-by-stage pipeline (artifacts passed between stages, loop-back table, orchestrator hierarchy, review council, self-optimization loop): [`workflows/end-to-end-development/README.md`](../../workflows/end-to-end-development/README.md).
