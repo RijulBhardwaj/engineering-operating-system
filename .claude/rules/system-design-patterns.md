@@ -13,6 +13,19 @@ Checklist to consider during architecture selection (architecture.md) and implem
 9. **Sagas** -- coordinate a multi-step distributed transaction with compensating actions on failure. Orchestration logic is pure code; durable step/state persistence (DB table or workflow engine) is needed once sagas must survive a process restart.
 10. **Leader election** -- exactly one node acts as leader for a task. Needs a coordination primitive: a DB row lock/advisory lock (cheapest, if already on Postgres), or a dedicated coordinator (etcd, Zookeeper, Redis lock) at larger scale. Not pure code -- needs a backing store even if it's the existing DB.
 
+## Slow-app diagnosis checklist (adopted 2026-11-24)
+
+Source: Instagram @thesidcodes reel, via explicit user instruction. A fixed triage list for "why is this app slow" -- same six causes recur regardless of stack. Check in order; don't guess which applies before measuring (profiler/query log/network tab).
+
+1. **Too many queries** (N+1, a round trip per item) -- batch, join, or cache. Overlaps item 4 above (DB indexes) only at the edge; this is about query *count*, not query plan.
+2. **One slow query** (DB reads every row) -- add an index on the scanned column, fetch fewer columns, or paginate. This is item 4 above applied to a single offending query, not a new pattern.
+3. **Huge responses** (more bytes than the screen needs) -- compress, trim unused fields from the payload, or stream instead of buffering the whole response.
+4. **Slow work done inside the request** (user waits on work they never see) -- move it to a scheduled job, a queue, or a background worker. Same pure-code-vs-infra split as sagas/pub-sub above: in-process scheduling is pure code, a durable queue surviving a restart needs a broker or DB-backed queue table.
+5. **Users far from the server** (every request crosses the world) -- edge caching, a CDN, or a second region. Infra, not code -- user provisions it.
+6. **Slow page** (client-side) -- lazy-load, ship less JavaScript, shrink images.
+
+Use this as the first pass on any reported "slow" complaint before reaching for a specific pattern above -- it routes to which of items 1-10 actually applies instead of guessing.
+
 ## What needs the user to provision something
 
 Pure code, nothing to install: consistent hashing, CAP-theorem decision, DB indexes, circuit breakers, single-instance idempotency, single-instance WebSockets.
