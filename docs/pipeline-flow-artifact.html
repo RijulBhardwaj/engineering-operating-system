@@ -1,0 +1,109 @@
+<title>Harness pipeline flow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{
+  --bg:#F7F6F2; --panel:#FFFFFF; --fg:#232220; --muted:#6B6A64;
+  --border:#DEDCD3; --accent:#3C3489; --accent-soft:#EEEDFE;
+  --stage:#0F6E56; --stage-soft:#E1F5EE;
+  --gate:#993C1D; --gate-soft:#FAECE7;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1A1A18; --panel:#232220; --fg:#E8E6DD; --muted:#A3A299;
+    --border:#3A3935; --accent:#AFA9EC; --accent-soft:#3C3489;
+    --stage:#5DCAA5; --stage-soft:#085041;
+    --gate:#F0997B; --gate-soft:#4A1B0C;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1A1A18; --panel:#232220; --fg:#E8E6DD; --muted:#A3A299;
+  --border:#3A3935; --accent:#AFA9EC; --accent-soft:#3C3489;
+  --stage:#5DCAA5; --stage-soft:#085041;
+  --gate:#F0997B; --gate-soft:#4A1B0C;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,sans-serif;line-height:1.6;}
+main{max-width:920px;margin:0 auto;padding-block:2.5rem;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));}
+h1{font-family:"Space Grotesk",Inter,sans-serif;font-size:1.6rem;margin:0 0 .25rem;}
+p.lede{color:var(--muted);margin:0 0 2rem;max-width:65ch;}
+h2{font-family:"Space Grotesk",Inter,sans-serif;font-size:1.1rem;margin:2.5rem 0 1rem;}
+.mermaid{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1.25rem;overflow-x:auto;}
+.legend{display:flex;flex-wrap:wrap;gap:.75rem 1.5rem;margin:1rem 0 0;font-size:.85rem;color:var(--muted);}
+.legend span{display:inline-flex;align-items:center;gap:.4rem;}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.panel h3{margin:0 0 .4rem;font-size:.95rem;}
+.panel p{margin:0;color:var(--muted);font-size:.9rem;}
+code{font-family:ui-monospace,monospace;font-size:.85em;background:var(--accent-soft);color:var(--accent);padding:.1em .35em;border-radius:4px;}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@500&display=swap">
+<main>
+<h1>Engineering operating system — pipeline flow</h1>
+<p class="lede">Idea to shipped feature: every gate, loop-back and review pass currently wired into this harness, as of 2026-11-24.</p>
+
+<h2>End-to-end flow</h2>
+<pre class="mermaid">
+flowchart TD
+  A["Idea / requirements"] --> B["Gate 0: Elephant drafts plan"]
+  B --> C{"Goldfish review\n(fresh, memoryless)"}
+  C -- "reject" --> B
+  C -- "approve" --> D["Architecture + ADR\n(alternatives scored)"]
+  D --> E["Task decomposition\n(orchestrator, no agent-spawns-agent)"]
+  E --> F["Parallel implementation\n(independent streams batched)"]
+  F --> G["QA gate L1-5\nstatic / unit / integration / peer / monitor"]
+  G --> H["QA gate L6\nLive walkthrough\n(run app, click ui-ux-states.md)"]
+  H --> I["Review Council\n7 passes + Zapier baseline"]
+  I -- "findings" --> J{"Patch pass\napproved IDs only"}
+  J --> F
+  I -- "clean" --> K{"Gate 6 verdict"}
+  K -- "do not ship" --> E
+  K -- "ship w/ conditions" --> L["git-workflow hard gate\nPR blocked until L1-3,5 pass locally"]
+  K -- "ship" --> L
+  L --> M["PR -> merge -> deploy\n+ setup-and-run doc"]
+  M --> N["Monitor / feedback"]
+  N -- "defect found" --> O{"which stage owns it?"}
+  O -- "wrong plan" --> B
+  O -- "wrong code" --> F
+  N -- "clean" --> P["Self-optimization loop"]
+  P -- "governance file?" --> B
+  P -- "non-governance" --> E
+</pre>
+<div class="legend">
+  <span><span class="sw" style="background:var(--gate)"></span>gate / decision</span>
+  <span><span class="sw" style="background:var(--stage)"></span>work stage</span>
+  <span><span class="sw" style="background:var(--accent)"></span>loop-back</span>
+</div>
+
+<h2>What each box actually is</h2>
+<div class="panel"><h3>Gate 0 — Elephant / Goldfish</h3><p>One session (full context) drafts the plan doc. A fresh subagent with zero shared history reviews it cold. Reject sends it back to a revision + a new goldfish, never the same one. No code starts on an unreviewed or rejected plan. <code>architecture.md</code></p></div>
+<div class="panel"><h3>Task decomposition / parallel streams</h3><p>The orchestrator is always the one session, never a dispatched subagent (agents never spawn agents). Independent file-groups batch together; same-file tasks serialize. <code>agent-coordination.md</code></p></div>
+<div class="panel"><h3>QA gate, 6 layers</h3><p>Static analysis, unit tests, integration tests, peer review, runtime monitoring, and the newly added live walkthrough — actually running the app and clicking every reachable state against the 44-state checklist, not just reading the diff. <code>ai-code-qa-gate.md</code>, <code>ui-ux-states.md</code></p></div>
+<div class="panel"><h3>Review Council, 7 passes + baseline</h3><p>Security audit → adversarial security (different reviewer) → supply-chain → maintainability → QA/abuse-case → patch (approved finding IDs only, never find-and-fix in one turn) → final verdict: <code>ship</code> / <code>ship with conditions</code> / <code>do not ship</code>. The Zapier baseline (RLS, secrets, access control, server-side-only sensitive logic) folds into the security pass. <code>release-review-passes.md</code></p></div>
+<div class="panel"><h3>Hard PR gate</h3><p>A PR cannot open until QA-gate layers 1-3 and 5 have actually run and passed locally. CI running afterward doesn't substitute. <code>git-workflow.md</code></p></div>
+<div class="panel"><h3>Self-optimization loop</h3><p>The harness can revise its own rules via branch + PR — except a hard-excluded governance set (<code>.claude/</code>, <code>policies/</code>, <code>CLAUDE.md</code>, this pipeline doc itself), which can only change by going back through Gate 0. <code>workflows/end-to-end-development/README.md</code></p></div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>
+(function(){
+  var themeMode = document.documentElement.dataset.mode;
+  var dark = themeMode ? themeMode === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    fontFamily: '"Inter", sans-serif',
+    themeVariables: {
+      darkMode: dark,
+      fontSize: '13px',
+      fontFamily: '"Inter", sans-serif',
+      primaryColor: dark ? '#3C3489' : '#EEEDFE',
+      primaryTextColor: dark ? '#E8E6DD' : '#232220',
+      primaryBorderColor: dark ? '#AFA9EC' : '#3C3489',
+      lineColor: dark ? '#A3A299' : '#6B6A64',
+      textColor: dark ? '#E8E6DD' : '#232220',
+    },
+  });
+})();
+</script>
