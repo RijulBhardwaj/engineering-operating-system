@@ -7,7 +7,7 @@ See also: [animation-styles.md](animation-styles.md) (which tool renders which n
 ## Pipeline stages
 
 1. **Concept** -- what the video explains, for whom, how long.
-2. **Script + scene plan** -- narration text broken into scenes/beats (remotion-superpowers' `create-video`/`create-short` skills do this).
+2. **Script + scene plan** -- draft against [script-template.md](script-template.md) (hook/lock-in/body-blocks/rehooks/CTA structure, 45-90s target), run it through that file's feedback generation loop (fresh review pass against its checklist, revise, approve) before scene-breakdown (remotion-superpowers' `create-video`/`create-short` skills do the scene/beat split once the script is frozen).
 3. **Manim diagram code** -- 3Blue1Brown-style math/code animations generated as Manim scenes.
 4. **Parallel render**: Manim renders diagram clips (frames) while Kokoro TTS renders narration audio for the same scenes -- independent, run side by side.
 5. **Remotion composition** -- diagram clips + narration audio + captions/music assembled into a timeline (`remotion-superpowers` skills: `add-voiceover`, `add-captions`, `add-music`, `add-transitions`), importing colors/fonts/logo from the project's own `video/brand/` (see brand-assets-template below) rather than hardcoding them.
