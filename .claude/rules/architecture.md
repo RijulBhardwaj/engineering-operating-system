@@ -31,6 +31,15 @@ Accepted ADRs are authoritative. Code review checks compliance. A decision that 
 
 Business requirement, PRD, spec, architecture, ADR, task, code, test, PR, release. Enough to answer "why does this code exist and how was it validated" by following links, not by asking the author.
 
+## Gate 0 -- Elephant-Goldfish plan review (mandatory before Gate 1)
+
+Source: Google's Elephant-Goldfish Model (EGM), adopted 2026-11-24 per explicit user instruction ("especially the first plan stage... only follow through when that is a success. Don't build anything without"). Applies to every non-trivial plan this gate covers -- same triviality exception as the rest of this file.
+
+1. **Elephant** -- the main session (full project memory/context) drafts the design doc: problem, approach, alternatives considered, risks. Write it to the project's planning doc, don't just state it in chat.
+2. **Goldfish** -- dispatch a fresh subagent with *no memory of this conversation* (a new `Agent` call, `subagent_type: "Plan"` or `general-purpose`, no context from this session's history) to review that doc cold, as if seeing the problem for the first time. A reviewer that already shares the elephant's framing can't catch the elephant's own blind spots -- that's the whole point of the split.
+3. **Gate.** Goldfish approves -> proceed to Gate 1. Goldfish rejects or raises material concerns -> elephant revises the doc and re-submits to a *new* goldfish (not the same one, which now has memory). Do not start implementation on a rejected or not-yet-reviewed plan, regardless of time pressure.
+4. Record the review outcome (approved/revised/rejected + reasons) next to the plan doc -- this is the evidence this gate produces, not a verbal "looks good."
+
 ## Gates
 
 1. Requirements defined.
