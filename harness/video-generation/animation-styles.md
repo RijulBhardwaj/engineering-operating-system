@@ -47,6 +47,36 @@ its one 2D-painterly-shaped feature doesn't close the gap either, at least not t
 scripted path. Not promoted to a candidate stage; not the default. See `registry/tools.yaml` for
 the `blender` / `claude-blender-skills` entries and their `decision` fields.
 
+## Local diffusion video (Wan2GP, GPU-poor) -- tested 2026-11-25, VRAM gap closed, style gap not yet
+
+A fourth, previously-unexplored path was actually tested (not just researched) after the three
+deterministic "moving painting" attempts above (SVG filters, Blender Grease Pencil, this project's
+own animated-short-film design) all confirmed the same structural limit: code-driven rendering
+cannot reproduce diffusion-model texture. This machine has an RTX 3050 Laptop GPU with only 6GB
+VRAM, which rules out most video diffusion models (12GB+ for HunyuanVideo/Open-Sora2/LTX-2/standard
+Wan2.1) -- but [Wan2GP](https://github.com/deepbeepmeep/Wan2GP), a "GPU poor" memory-managed fork
+of Wan 2.1/2.2, documents a genuine 6GB floor for its smallest model. Full test, evidence, and
+reproduction steps: `harness/video-generation/_eval/wan2gp-test/README.md`.
+
+**Result: the hardware constraint is solved, the style gap is not (yet).** A real headless
+generation (Wan2.1 Text2Video 1.3B, 832x480, 33 frames, 20 steps, the same painterly test prompt)
+completed in 5m23s using only ~680-850MB of VRAM -- nowhere near the 6GB ceiling, confirming local
+diffusion video generation is genuinely feasible here, free, at this budget. But the output
+(`_eval/wan2gp-test/wan2gp-painterly-test.mp4`) reads as flat, clean vector/cutout-illustration
+style -- not painterly brushwork -- so this specific model/prompt combination does not close the
+"moving painting" gap either, even though it is a real diffusion result (soft color blending,
+coherent prompt-following motion) and not a vector render. The larger Wan models that might render
+a more paint-like look need 12GB+ VRAM, out of reach on this card.
+
+**Not adopted as a default or as a replacement for anything.** This is a second, separate content
+engine for stylized/non-accuracy-critical video (the painterly-short-film genre) only, explicitly
+not promoted to a general style -- CAT-prep educational content keeps the deterministic
+Manim/Three.js/Remotion pipeline, since diffusion models cannot guarantee accurate on-screen
+math/text, which is exactly why that stack was chosen for that content category originally. Two
+engines for two content categories, not one replacing the other. Next step for the painterly gap
+specifically (not done in this pass): prompt/LoRA/sampler iteration on the same 1.3B install,
+which is a style-tuning question, not a hardware blocker anymore.
+
 ## Math/diagram explainer -- Manim skill (installed this same pass)
 
 Math Diagram, Cartoon Explainer, Domino Reveal.
