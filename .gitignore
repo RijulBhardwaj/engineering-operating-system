@@ -19,3 +19,5 @@ Thumbs.db
 .idea/
 knowledge/.obsidian/
 tools/obscura/
+tools/blender-portable/
+harness/video-generation/_eval/blender-grease-pencil/frames/

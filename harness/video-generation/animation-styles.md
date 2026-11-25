@@ -28,6 +28,25 @@ Remotion/CSS can fake flat or pseudo-isometric looks, but cannot genuinely rende
 
 Blender MCP was considered and **not installed** -- full 3D modeling/sculpting is overkill for motion-graphics-style 3D that a Three.js scene in a Remotion composition already covers.
 
+## Evaluated and rejected: Blender Grease Pencil for "moving painting" (2026-11-25)
+
+Tested specifically to see if Blender's Grease Pencil (GPv3, 2D-in-3D ink/brush system, Blender 5.x)
+could close the gap the prior deterministic SVG-filter attempt
+(`CAT_Guide/video/templates/painterly-deterministic/`) was rated as missing -- real brush-stroke
+variance and organic silhouette noise ("moving painting"), not "roughened flat vector." Full eval,
+rendered frames and MP4: `harness/video-generation/_eval/blender-grease-pencil/README.md`.
+
+Result: **rejected, gap not closed**. A scripted `bpy` Grease Pencil scene (jittered-circle +
+rays, 120 frames/5s, Eevee) rendered cheaply (0.2s/frame, GPU-bound -- render cost is not the
+problem) but the output reads as a faceted, near-constant-width polygon outline with no visible
+fill -- same "flat vector" failure mode as the SVG attempt, not better. `claude-blender-skills`
+(https://github.com/mromidev/claude-blender-skills), installed alongside this test, turned out to
+be 3 Cycles-photoreal skills (night drone city, forest, car film) with zero Grease Pencil content
+-- confirms the project's existing read that Blender's heavy path is overkill here, and adds that
+its one 2D-painterly-shaped feature doesn't close the gap either, at least not through a simple
+scripted path. Not promoted to a candidate stage; not the default. See `registry/tools.yaml` for
+the `blender` / `claude-blender-skills` entries and their `decision` fields.
+
 ## Math/diagram explainer -- Manim skill (installed this same pass)
 
 Math Diagram, Cartoon Explainer, Domino Reveal.

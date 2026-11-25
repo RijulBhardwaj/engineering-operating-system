@@ -1,0 +1,5 @@
+engine=BLENDER_EEVEE
+frames=120
+resolution=960x540
+total_render_seconds=24.62
+seconds_per_frame=0.205
