@@ -14,11 +14,19 @@ ChalkBoard, Glow Sketch, Comic Art, Pixel Art, Lego Style, Clay 3D, PS2 Style.
 
 These are rendering-style choices (sketch/chalk texture, pixel grid, toy-brick/clay shading, low-fidelity PS2-era look) achievable as generative/procedural art + motion, not a distinct 3D pipeline -- `example-skills:algorithmic-art` for the generative look, GSAP for the motion. No renderer gap.
 
-## True 3D -- needs a real 3D renderer (Three.js skill installed 2026-11-24)
+## True 3D (Three.js via @remotion/three) -- now the default, proven working 2026-11-25
 
 CGI Motion, Explainer 3D, 3D Data Chart, Glow Atom.
 
-Remotion/CSS can fake flat or pseudo-isometric looks, but cannot genuinely render lit, lensed, camera-moved 3D geometry -- these four styles specifically need a real 3D scene graph and renderer. **Reversal of an earlier decision**: a Three.js skill was previously skipped in this project as unnecessary for diagram-only content; these named styles are the concrete need that justifies installing it now. Installed globally via `npx skills add -g cloudai-x/threejs-skills@threejs-fundamentals` (see `registry/tools.yaml`). Blender MCP was considered and **not installed** -- full 3D modeling/sculpting is overkill for motion-graphics-style 3D that a Three.js scene in a Remotion composition already covers.
+Remotion/CSS can fake flat or pseudo-isometric looks, but cannot genuinely render lit, lensed, camera-moved 3D geometry -- these four styles need a real 3D scene graph and renderer. **This is now the default path for all four styles, not an option alongside a CSS-transform fallback.** A Three.js skill was installed 2026-11-24 for this; on 2026-11-25 the actual Remotion integration was proven end-to-end (not just "the skill exists"):
+
+- **Package**: `@remotion/three` -- Remotion's own official integration, exporting `<ThreeCanvas>`, which renders a three.js scene deterministically per-frame inside Remotion's render pipeline (not a live/realtime canvas loop -- it matches Remotion's frame-exact render model). Installs alongside plain `three`, `react`, `react-dom` -- no exotic setup.
+- **Approach**: build the model/view/projection matrices for real with three.js's own `THREE.Matrix4`/`Matrix3` (e.g. `new THREE.Matrix4().makeRotationY(angle)`), apply to a mesh via `matrixAutoUpdate={false}` + an explicit `matrix` prop, and read the same matrix's `.elements` back out for any on-screen overlay -- so the displayed numbers are the numbers actually driving the geometry, not a decorative animation.
+- **Proof**: isolated test project at `harness/video-generation/_eval/three-matrix-test/` -- a cube rotated by a real per-frame rotation matrix, with a live matrix-value overlay and a transformed-corner readout, rendered via `npx remotion render` to a real MP4: 150/150 frames, 0 render errors, 1080x1920 @ 30fps, 5.000s, ~516 KB (verified with `ffprobe`). The risk the CAT_Guide render avoided (wiring Three.js into Remotion) was real to investigate but did not materialize as a blocker -- it works cleanly once `@remotion/three` (not a manual Three.js canvas) is used.
+- **Reusable template**: `harness/video-generation/templates/matrix-transform-3d/` -- copy its `src/` into a project for "show real math transforming a 3D object" content; see that folder's README for drop-in steps and its own honest-caveat note (built to the *described* genre of a referenced reel whose actual frames were never watched, not a verified frame-for-frame copy).
+- **CSS-transform fallback is now secondary/degraded only** -- reach for it only if `@remotion/three` genuinely fails in a given project's environment (e.g. an unresolvable WebGL/headless-render issue), and say so explicitly when falling back; it is no longer the default assumption for these four styles.
+
+Blender MCP was considered and **not installed** -- full 3D modeling/sculpting is overkill for motion-graphics-style 3D that a Three.js scene in a Remotion composition already covers.
 
 ## Math/diagram explainer -- Manim skill (installed this same pass)
 
