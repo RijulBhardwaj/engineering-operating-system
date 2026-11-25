@@ -76,6 +76,59 @@ into the style-routing doc (as a second content engine for non-accuracy-critical
 explicitly separate from the deterministic Manim/Three.js/Remotion pipeline CAT-prep content
 still uses).
 
+## Follow-up pass (2026-11-25, same day): closing the style gap -- attempted, not closed
+
+The "next step" this doc left open above (prompt/LoRA/sampler iteration on the same 1.3B
+install) was actually run -- 3-4 bounded generations, not open-ended. All reuse the same
+832x480/33-frame settings as the baseline for a fair comparison.
+
+**1. LoRA search (not tested).** Wan2GP genuinely supports LoRAs (`activated_loras` /
+`loras_multipliers` in `wgp.py`, per-model dirs under `loras/<model_type>/`; `loras/wan_1.3B/`
+exists but is empty). A real search (CivitAI + Hugging Face, not assumption) found several free
+painterly/oil-painting LoRAs for Wan2.1 -- `latentcat/flow-oil-WAN14BT2V` (Van-Gogh-influenced
+oil-paint style), Civitai's "[WAN2.1] Realistic Oil Paintings [STYLE]", Remade-AI's historic-
+painting LoRA -- but every one found is trained for the **14B** Wan model (12GB+ VRAM), none for
+the **1.3B** T2V model this 6GB card actually runs. Loading a 14B-trained LoRA onto the 1.3B model
+would not produce a meaningful test, so none was installed, per this task's own instruction not to
+force a mismatched LoRA. **No Wan2.1 1.3B-compatible free painterly LoRA exists as of this
+search.**
+
+**2. Prompt-only variant v2 -- `test_painterly_v2.json`, same 20 steps/guidance 6:**
+```
+prompt: "a seed breaking through soil toward sunlight, thick impasto brushstrokes, visible
+canvas texture, loose painterly edges, Van Gogh style swirling motion, oil paint texture,
+expressive brush marks, soft color bleeding between strokes"
+negative_prompt: "flat vector, clean lines, cel-shaded, flat color planes, cutout illustration,
+sharp hard edges, cartoon, vector art, flat shading"
+```
+Output: `wan2gp-painterly-v2-negprompt.mp4` (frame extracted to `frames_v2/frame_2.png`). The
+negative prompt worked exactly as intended against the *baseline's* failure mode -- the flat-
+vector/cutout look is completely gone -- but the result swung to **photorealistic macro
+photography** of soil, a sprouting seed, and worm-like shapes, with real depth-of-field,
+specular highlights and naturalistic lighting. There is no stroke texture, no impasto, no
+paint-like color blending anywhere in the frame. This is a different failure mode than the
+baseline, not a fix: still not painterly.
+
+**3. Variant v3 -- same prompt/negative-prompt text, steps 20->30, guidance_scale 6->9,
+flow_shift 5->3 (`test_painterly_v3.json`):** Output: `wan2gp-painterly-v3-highguidance.mp4`
+(frame in `frames_v3/frame_mid.png`). This produced swirling molten-gold/liquid patterns with
+genuine curved stroke-like structure and visible texture variance -- the closest of the three
+attempts to "brushwork" in a literal sense (curved, variable-width colored bands) -- but the
+seed/soil subject from the prompt is gone entirely; the output reads as abstract liquid/metal
+pour, not a painting of a scene. Sampler/guidance changes bought stroke-like texture at the cost
+of losing prompt coherence, not a usable recipe.
+
+**Honest verdict: the painterly-style gap is NOT closed.** At the 1.3B parameter scale this
+6GB card can run, the model appears to have two main attractors -- flat/vector illustration, or
+photoreal/liquid abstraction -- and both prompt wording and sampler settings swing the output
+between them rather than landing on "painterly brushwork on a recognizable scene" in the middle.
+No freely available LoRA exists for this specific model size to push it there instead. This is a
+genuine negative result for this axis, not a marginal win being oversold: three real generations
+across prompt-only and sampler variants, none produced visible discrete brush strokes/impasto on
+a coherent subject. Further progress on this specific goal would most plausibly require either a
+14B-capable GPU (12GB+ VRAM, out of reach here) to use the painterly LoRAs that do exist, or
+training a custom 1.3B LoRA from scratch (out of scope for a prompt-engineering pass).
+
 ## Reproduction
 
 ```bash

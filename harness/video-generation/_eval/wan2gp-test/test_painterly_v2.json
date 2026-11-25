@@ -1,0 +1,12 @@
+{
+    "model_type": "t2v_1.3B",
+    "prompt": "a seed breaking through soil toward sunlight, thick impasto brushstrokes, visible canvas texture, loose painterly edges, Van Gogh style swirling motion, oil paint texture, expressive brush marks, soft color bleeding between strokes",
+    "negative_prompt": "flat vector, clean lines, cel-shaded, flat color planes, cutout illustration, sharp hard edges, cartoon, vector art, flat shading",
+    "resolution": "832x480",
+    "video_length": 33,
+    "num_inference_steps": 20,
+    "sample_solver": "unipc",
+    "flow_shift": 5,
+    "guidance_scale": 6,
+    "seed": 42
+}

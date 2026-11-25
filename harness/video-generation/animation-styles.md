@@ -73,9 +73,23 @@ engine for stylized/non-accuracy-critical video (the painterly-short-film genre)
 not promoted to a general style -- CAT-prep educational content keeps the deterministic
 Manim/Three.js/Remotion pipeline, since diffusion models cannot guarantee accurate on-screen
 math/text, which is exactly why that stack was chosen for that content category originally. Two
-engines for two content categories, not one replacing the other. Next step for the painterly gap
-specifically (not done in this pass): prompt/LoRA/sampler iteration on the same 1.3B install,
-which is a style-tuning question, not a hardware blocker anymore.
+engines for two content categories, not one replacing the other.
+
+**Follow-up (same day): painterly gap pursued, NOT closed.** The prompt/LoRA/sampler iteration
+flagged above as the next step was actually run. LoRA: a real search found free painterly/oil
+LoRAs for Wan2.1, but only for the 14B model (12GB+ VRAM) -- none exist yet for the 1.3B model
+this 6GB card can run, so none was installed (forcing a mismatched LoRA would not be a real
+test). Prompt-only iteration (stronger painterly-technique language + a negative prompt against
+"flat vector/cel-shaded/cutout") eliminated the flat-vector look but swung the output to
+**photorealistic macro photography** instead -- still no brush-stroke texture or impasto.
+Raising guidance/steps and lowering flow_shift produced swirling, stroke-like liquid-gold
+patterns (the closest to "brushwork" texture-wise) but lost the prompt's subject entirely,
+collapsing into abstraction. Honest conclusion: at this VRAM/model-size budget, prompt and
+sampler changes swing the output between "flat illustration" and "photoreal/abstract" without
+landing on painterly brushwork in between, and no compatible free LoRA exists to push it there.
+This axis is considered explored and not viable at the current hardware tier, not abandoned
+without trying. Full evidence, all three output videos and extracted frames:
+`harness/video-generation/_eval/wan2gp-test/README.md`.
 
 ## Math/diagram explainer -- Manim skill (installed this same pass)
 
