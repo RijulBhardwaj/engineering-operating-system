@@ -42,6 +42,7 @@ node .claude/factory/install.mjs          # (re)install key, pre-push hook, giti
 - `.git/hooks/pre-push`: re-verifies the token for every pushed ref, re-runs gitleaks on the pushed range, blocks force pushes and remote branch deletes. This catches pushes from any tool, not only Claude.
 - Role limits (in `guard`, keyed on the subagent `agent_type`): `reviewer`, `scout` and `blind-qa` cannot edit files or run writing shell commands; `blind-qa` cannot read source, diffs or listings; `planner` writes only under `docs/` or `specs/`.
 - Waived work: a token whose audit used a waiver can be pushed to a feature branch, but `gh pr merge`, releases, deploys and pushes to the default branch are blocked. Only the owner merges waived work.
+- `hook.mjs postshell` (PostToolUse, every shell command): restores changed kit files from HEAD, reinstalls a removed pre-push hook, and compares git state with the previous command: a remote ref that moved to one of our branch tips without a valid token (a push that skipped every gate) or a new commit touching the kit raises an alarm back to the model.
 - A hook that runs past its watchdog (guard 50s, post 170s) blocks instead of timing out open.
 - No CI workflow runs the factory yet. A GitHub check would be the one gate a local process cannot fake; adding it and making it required in branch protection is an owner step.
 
@@ -52,5 +53,6 @@ Commit trailers: `TEST-REMOVAL-APPROVED: <why>`, `LARGE-DIFF-APPROVED: <why>`, `
 - Every local check runs as the same Windows user as Claude, so a determined process could forge a token or edit files by indirect means. The HMAC token catches stale, edited and accidental tokens, not a deliberate attack. Real enforcement for `main` needs GitHub branch protection with the CI check required, which only the repo owner can turn on.
 - Shell analysis is pattern based, and script files a command runs are scanned inline (two levels), but obfuscated or generated code can still slip past `guard`; pre-push re-checks every pushed ref independently.
 - Waiver trailers and `--record` reviews are written by the agent itself. They are logged, and waived work cannot be merged by an agent, but they are not proof that a person approved.
+- Role limits are pattern based (a probe script in the temp dir can still write); they stop accidents and casual drift, not a determined agent.
 - Role limits depend on Claude Code putting `agent_type` in the hook input inside subagents; where it is absent the limits do not apply.
 - Mutation testing is not part of the audit yet (no mutation tool is installed in the projects).

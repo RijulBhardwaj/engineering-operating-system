@@ -13,7 +13,7 @@
   },
   "stopCheck": null,
   "sourceRegex": "^(\\.claude/hooks|bootstrap|scripts|harness|tools)/.*\\.([cm]?js|sh|ps1|py)$",
-  "testRegex": "(^|/)tests?/|\\.(test|spec)\\.[cm]?js$|(^|/)selftest\\.mjs$",
+  "testRegex": "(^|/)tests?/|\\.(test|spec)\\.[cm]?js$",
   "audit": [
     {
       "id": "yaml-valid",

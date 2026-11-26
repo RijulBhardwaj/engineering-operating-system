@@ -98,7 +98,7 @@ function expandScripts(cmd, cwd) {
 }
 // Inline the text of script files a command runs (bash x.sh, node x.mjs, ./x, . x, pwsh -File x.ps1), two levels,
 // so `git push --no-verify` hidden in a self-written script is still seen. Kit runners are skipped (they are trusted).
-const SCRIPT_REF = /(?:\b(?:bash|sh|zsh|source|node|deno\s+run|bun|python3?|py|perl|ruby|pwsh|powershell)(?:\.exe)?(?:\s+-(?:File|ExecutionPolicy\s+\S+|NoProfile|\w))*\s+|(?:^|[;&|]\s*)\.\s+|(?:^|[;&|(]\s*)(?=\.{1,2}\/))("[^"]+"|'[^']+'|[^\s;&|()<>]+)/g;
+const SCRIPT_REF = /(?:(?:\b(?:bash|sh|zsh|python3?|py|node|pwsh|perl|ruby)\s*<|\$\(\s*(?:cat|type|Get-Content)|--(?:import|require|loader)[=\s]?|\s-r)\s*|\b(?:bash|sh|zsh|source|node|deno\s+run|bun|python3?|py|perl|ruby|pwsh|powershell)(?:\.exe)?(?:\s+-(?:File|ExecutionPolicy\s+\S+|NoProfile|\w))*\s+|(?:^|[;&|]\s*)\.\s+|(?:^|[;&|(]\s*)(?=\.{1,2}\/))("[^"]+"|'[^']+'|[^\s;&|()<>]+)/g;
 function expandFiles(cmd, cwd, depth = 0) {
   if (depth > 1) return cmd;
   const seen = new Set();
@@ -107,7 +107,9 @@ function expandFiles(cmd, cwd, depth = 0) {
     if (/(^|[\\/])\.claude[\\/]factory[\\/]/.test(name) || seen.has(name)) return m;
     seen.add(name);
     let p;
-    try { p = path.resolve(cwd, name.replace(/^\/([a-zA-Z])\//, "$1:/")); if (!fs.statSync(p).isFile()) return m; } catch { return m; } // not a file: nothing to inline
+    // Not a file (e.g. the quoted body of `sh -c "$(cat f)"`): scan inside it instead.
+    const inner = () => (/\s|\$\(/.test(name) ? `${m} [${expandFiles(name, cwd, depth + 1)}]` : m);
+    try { p = path.resolve(cwd, name.replace(/^\/([a-zA-Z])\//, "$1:/")); if (!fs.statSync(p).isFile()) return inner(); } catch { return inner(); }
     const txt = fs.readFileSync(p, "utf8").slice(0, 65536);
     return `${m} [file: ${expandFiles(txt, path.dirname(p), depth + 1)}]`;
   });
@@ -202,22 +204,28 @@ const MCP_DENY = /(deploy|migration|merge|secret|env_var|promote|rollback|delete
 // Per-agent limits, keyed on the hook input's agent_type (set inside subagents). Main session: no agent_type, no limits here.
 const READ_ONLY_ROLES = new Set(["reviewer", "scout", "blind-qa"]);
 const SHELL_WRITES = /((?<![2&])>(?!>?\s*(&\d|\/dev\/null\b|\$null\b|nul\b))|\btee\b|\bsed\s+-i|\b(cp|mv|rm|del|ln|touch|truncate|chmod|mkdir|copy|move|xcopy|robocopy)\b|\b(Set|Add|Clear)-Content\b|\bOut-File\b|\b(New|Copy|Move|Remove|Rename)-Item\b|\bgit\s+(add|commit|push|merge|rebase|reset|checkout|switch|stash|apply|am|cherry-pick|tag)\b|\bnpm\s+(i|install|add|uninstall)\b)/i;
-const SOURCE_READS = /\b(cat|head|less|more|grep|rg|sed|awk|type|Get-Content|Select-String|find|ls|dir|tree)\b|\bgit\s+(diff|show|log|blame|grep|ls-files|cat-file)\b/i;
+// Command position only (start of a pipeline segment), so a word inside an argument (e.g. -H "Content-Type: x") is not a read.
+const SOURCE_READS = /(?:^|[;&|(]|\$\()\s*(?:sudo\s+)?(cat|head|tail|less|more|grep|egrep|rg|sed|awk|type|nl|strings|od|xxd|Get-Content|gc|Select-String|find|ls|dir|tree|git\s+(?:diff|show|log|blame|grep|ls-files|cat-file))\b/i;
+// Redirects into the temp dir are scratch output, not repo writes.
+const TMP_REDIRECT = /\d?>>?\s*["']?(\$\{?TE?MP\}?|\/tmp\/|%TE?MP%|\$env:TE?MP)[^\s"';&|]*["']?/gi;
 function roleGate(role, tool, ti) {
   if (!role) return;
-  const cmd = String(ti.command || ti.text || "").replace(RUNNER, " ");
+  const cmd = String(ti.command || ti.text || "").replace(RUNNER, " ").replace(TMP_REDIRECT, " ");
+  const bare = cmd.replace(/"(?:[^"\\]|\\.)*"|'[^']*'/g, '""'); // quoted text (grep patterns, messages) is not a write
   const shell = /^(Bash|PowerShell|mcp__terminal__run_in_terminal)$/.test(tool);
   const edit = /^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool);
   if (READ_ONLY_ROLES.has(role)) {
-    if (edit) deny(`${role} is read-only: ${tool} is not allowed`);
-    if (shell && SHELL_WRITES.test(cmd)) deny(`${role} is read-only: that command writes or changes git state`);
+    if (shell && EVAL.test(cmd)) deny(`${role} is read-only: inline-evaluated code can write; put a probe script in the temp dir and run it`);
+    // Scratch files (probe scripts, notes) may go to the temp dir; nothing in the project.
+    if (edit && !OUTSIDE_ALLOW.slice(0, 1).some((d) => L.inside(ti.file_path || ti.notebook_path || "", d, L.ROOT))) deny(`${role} is read-only: ${tool} is only allowed in the temp dir`);
+    if (shell && SHELL_WRITES.test(bare)) deny(`${role} is read-only: that command writes or changes git state`);
   }
   if (role === "blind-qa") {
     if (/^(Read|Grep|Glob|LS)$/.test(tool) || (shell && SOURCE_READS.test(cmd))) deny("blind-qa tests through the running app only: reading source, diffs or listings is not allowed");
   }
   if (role === "planner") {
     if (edit && !/^(docs|specs?)\//.test(projectRel(ti.file_path || ti.notebook_path || "", L.ROOT))) deny("planner writes specs only, under docs/ or specs/");
-    if (shell && SHELL_WRITES.test(cmd)) deny("planner writes specs only; shell writes and git changes are not allowed");
+    if (shell && SHELL_WRITES.test(bare)) deny("planner writes specs only; shell writes and git changes are not allowed");
   }
 }
 
@@ -379,6 +387,31 @@ async function session() {
 
 // ---------- PostToolUse(shell): undo any tampering with the factory that slipped past the guard ----------
 const KIT_PATHS = [".claude/factory", ".claude/settings.json", ".claude/agents", ".gitattributes"];
+// Detection behind the guard: whatever a command did, compare git state with the last shell command's.
+// A remote ref that now equals one of our branch tips without a valid audit token means a push slipped past the
+// gates; a new commit touching the kit means the factory changed (the audit then needs a waiver, which blocks merge).
+function afterTheFact(c, unprotect) {
+  const notes = [];
+  const sp = path.join(L.STATE_DIR(), "postshell.json");
+  const refs = (pat) => Object.fromEntries(L.git(["for-each-ref", "--format=%(refname) %(objectname)", pat], { check: false }).split("\n").filter(Boolean).map((l) => l.split(" ")));
+  const now = { head: L.git(["rev-parse", "HEAD"], { check: false }), remotes: refs("refs/remotes") };
+  let prev = null;
+  try { prev = JSON.parse(fs.readFileSync(sp, "utf8")); } catch { prev = null; } // first run: nothing to compare
+  fs.mkdirSync(path.dirname(sp), { recursive: true });
+  fs.writeFileSync(sp, JSON.stringify(now));
+  if (!prev) return notes;
+  const tips = new Set(Object.values(refs("refs/heads")));
+  for (const [ref, sha] of Object.entries(now.remotes)) {
+    if (prev.remotes?.[ref] === sha || !tips.has(sha) || /\/HEAD$/.test(ref)) continue;
+    if (!L.verifyToken(sha, L.ROOT, { requireHead: false, requireClean: false }).ok) notes.push(`${ref} moved to ${sha.slice(0, 12)}, which has no valid audit token: an unaudited push got past the gates. Tell the user now.`);
+  }
+  if (prev.head && now.head && prev.head !== now.head && L.gitOk(["merge-base", "--is-ancestor", prev.head, now.head])) {
+    const kit = L.git(["diff", "--name-only", `${prev.head}..${now.head}`, "--", ...KIT_PATHS], { check: false }).split("\n").filter((f) => f && !(unprotect && unprotect.test(f)));
+    if (kit.length) notes.push(`new commits changed factory files (${kit.join(", ")}). Factory changes need the user; this branch cannot be merged by an agent.`);
+  }
+  return notes;
+}
+
 async function postShell() {
   L.readStdinJson();
   const c = L.cfg();
@@ -399,6 +432,7 @@ async function postShell() {
   }
   const hp = L.git(["config", "--get-all", "core.hooksPath"], { check: false });
   if (hp) notes.push(`core.hooksPath is set to ${hp}; this disables the pre-push gate. Tell the user.`);
+  notes.push(...afterTheFact(c, unprotect));
   if (notes.length) {
     L.log("guard", `TAMPER ${notes.join(" | ")}`);
     process.stderr.write(`software-factory: ${notes.join("\n")}\nDo not modify the factory; ask the user.\n`);

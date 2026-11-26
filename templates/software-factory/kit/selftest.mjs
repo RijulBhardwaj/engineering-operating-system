@@ -98,6 +98,8 @@ const hid = path.join(os.tmpdir(), `factory-selftest-${process.pid}.sh`);
 fs.writeFileSync(hid, "#!/bin/sh\ngit push --no-verify origin HEAD\n");
 expectHook(A, "deny: push hidden in a script file", K, "guard", bash(`bash "${hid.replace(/\\/g, "/")}"`), R, true);
 expectHook(A, "deny: script run as ./path", K, "guard", { tool_name: "Bash", tool_input: { command: `cd "${path.dirname(hid).replace(/\\/g, "/")}" && ./${path.basename(hid)}` }, cwd: R }, R, true);
+expectHook(A, "deny: script fed on stdin", K, "guard", bash(`bash < "${hid.replace(/\\/g, "/")}"`), R, true);
+expectHook(A, "deny: script via $(cat f)", K, "guard", bash(`sh -c "$(cat '${hid.replace(/\\/g, "/")}')"`), R, true);
 fs.rmSync(hid, { force: true });
 // Role limits keyed on agent_type.
 const AS = (role, tool, ti) => ({ tool_name: tool, tool_input: ti, cwd: R, agent_type: role });
@@ -107,6 +109,14 @@ expectHook(A, "allow: reviewer reads the diff", K, "guard", AS("reviewer", "Bash
 expectHook(A, "deny: blind-qa reads source", K, "guard", AS("blind-qa", "Bash", { command: "cat src/index.ts" }), R, true);
 expectHook(A, "deny: blind-qa uses Read", K, "guard", AS("blind-qa", "Read", { file_path: path.join(R, "README.md") }), R, true);
 expectHook(A, "allow: blind-qa curls the sandbox", K, "guard", AS("blind-qa", "Bash", { command: "curl -s http://127.0.0.1:4100/" }), R, false);
+expectHook(A, "allow: blind-qa curl with a Content-Type header", K, "guard", AS("blind-qa", "Bash", { command: 'curl -s -X POST -H "Content-Type: application/json" -d "{}" http://127.0.0.1:4100/api' }), R, false);
+expectHook(A, "deny: blind-qa tails source", K, "guard", AS("blind-qa", "Bash", { command: "tail -n 50 src/index.ts" }), R, true);
+expectHook(A, "allow: reviewer writes a probe in temp", K, "guard", AS("reviewer", "Write", { file_path: path.join(os.tmpdir(), "probe.mjs"), content: "x" }), R, false);
+expectHook(A, "allow: reviewer redirects into temp", K, "guard", AS("reviewer", "Bash", { command: "git diff HEAD~1 > $TEMP/d.txt 2>&1" }), R, false);
+expectHook(A, "deny: reviewer redirects into the repo", K, "guard", AS("reviewer", "Bash", { command: "git diff HEAD~1 > notes.txt" }), R, true);
+expectHook(A, "allow: reviewer greps for an arrow", K, "guard", AS("reviewer", "Bash", { command: 'grep -rn "=>" src | head' }), R, false);
+expectHook(A, "deny: reviewer inline eval", K, "guard", AS("reviewer", "Bash", { command: "node -e \"require('fs').writeFileSync('x','y')\"" }), R, true);
+expectHook(A, "allow: blind-qa curl --head", K, "guard", AS("blind-qa", "Bash", { command: "curl --head http://127.0.0.1:4100/" }), R, false);
 expectHook(A, "deny: planner writes source", K, "guard", AS("planner", "Write", { file_path: path.join(R, "src", "x.ts"), content: "x" }), R, true);
 expectHook(A, "allow: planner writes a spec", K, "guard", AS("planner", "Write", { file_path: path.join(R, "docs", "specs", "x.md"), content: "x" }), R, false);
 
@@ -220,6 +230,13 @@ try {
   rec(B, "merge denial names the waiver", /waiver/i.test(r.stderr), r.stderr);
   r = sh("git push -q origin HEAD:main");
   rec(B, "pre-push blocks waived work to the default branch", r.status !== 0 && /waivers/.test(r.stderr), r.stderr);
+  // After-the-fact detection: a push that skipped every gate (--no-verify outside Claude) and a commit to the kit.
+  hook(SK, "postshell", { tool_name: "Bash", tool_input: { command: "x" }, cwd: repo }, repo);
+  fs.appendFileSync(path.join(SK, "hook.mjs"), "\n// x\n");
+  sh('git commit -qam "docs: sneak" && git push -q --no-verify origin feat/waived');
+  r = hook(SK, "postshell", { tool_name: "Bash", tool_input: { command: "x" }, cwd: repo }, repo);
+  rec(B, "post-shell detects an unaudited push", r.status === 2 && /unaudited push/.test(r.stderr), r.stderr);
+  rec(B, "post-shell detects a commit to the factory", /changed factory files/.test(r.stderr), r.stderr);
   r = hook(SK, "session", { session_id: "s" }, repo);
   rec(B, "session hook prints factory banner, no alarms", /software-factory:selftest/.test(r.stdout) && !/ALARM/.test(r.stdout), r.stdout);
 } finally {
