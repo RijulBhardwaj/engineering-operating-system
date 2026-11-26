@@ -1,0 +1,36 @@
+{
+  "name": "cat-guide",
+  "defaultBranch": "main",
+  "baseRef": "main",
+  "ports": [4300, 4319],
+  "prePush": false,
+  "fastChecks": {
+    ".js": "node --check {file}",
+    ".mjs": "node --check {file}",
+    ".py": "python -m py_compile {file}"
+  },
+  "fastCheckSkip": "^(app/vendor|raw|video|shots|deploy|userdata)/",
+  "slopSkip": "^(app/vendor|raw)/",
+  "stopCheck": "python tests_serve.py && python data/validate.py",
+  "stopCheckTimeoutSec": 240,
+  "sourceRegex": "^(app/(js|index\\.html|.*\\.css)|data/[^/]+\\.py|functions|serve\\.py)",
+  "testRegex": "(^|/)tests?/|^tests_[^/]+\\.py$|(^|/)test_[^/]+\\.py$|\\.(test|spec)\\.[cm]?js$",
+  "audit": [
+    { "id": "serve-tests", "cmd": "python tests_serve.py", "timeoutSec": 300 },
+    { "id": "data-validate", "cmd": "python data/validate.py", "timeoutSec": 600 },
+    { "id": "js-syntax", "cmd": "git ls-files 'app/js/*.js' 'app/js/**/*.js' 'functions/*.js' | while read -r f; do node --check \"$f\" || exit 1; done; echo js ok", "timeoutSec": 120 }
+  ],
+  "sandbox": {
+    "start": "python serve.py {PORT}",
+    "health": "/app/",
+    "bootTimeoutSec": 30,
+    "smoke": [
+      { "path": "/app/", "status": 200, "contains": "<title>CAT Prep" }
+    ]
+  },
+  "duplication": { "paths": ["app/js"], "threshold": 5, "minLines": 8 },
+  "complexity": { "ccn": 15, "length": 100, "required": false },
+  "semgrep": { "configs": ["p/default"] },
+  "review": { "model": "opus" },
+  "maxDiffLines": 1500
+}
