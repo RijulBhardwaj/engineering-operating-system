@@ -106,6 +106,12 @@ const ok = path.join(os.tmpdir(), `factory-selftest-ok-${process.pid}.sh`);
 fs.writeFileSync(ok, "#!/bin/sh\n# checks against a running Worker (wrangler dev); deploy happens elsewhere (stage 3)\n// git push is done by CI\nrm -rf build dist\ngit reset --hard HEAD 2>/dev/null || true\necho ok\n");
 expectHook(A, "allow: ordinary script (deploy in comments, cleanup)", K, "guard", bash(`bash "${ok.replace(/\\/g, "/")}"`), R, false);
 fs.rmSync(ok, { force: true });
+const wr = path.join(os.tmpdir(), `factory-selftest-wr-${process.pid}.sh`);
+fs.writeFileSync(wr, '#!/bin/sh\necho "[alias]" >> .git/config\n');
+expectHook(A, "deny: script that writes .git/config", K, "guard", bash(`bash "${wr.replace(/\\/g, "/")}"`), R, true);
+fs.writeFileSync(wr, "#!/bin/sh\n/* git push --no-verify origin HEAD\n");
+expectHook(A, "deny: bypass hidden behind a /* prefix", K, "guard", bash(`bash "${wr.replace(/\\/g, "/")}"`), R, true);
+fs.rmSync(wr, { force: true });
 // Role limits keyed on agent_type.
 const AS = (role, tool, ti) => ({ tool_name: tool, tool_input: ti, cwd: R, agent_type: role });
 expectHook(A, "deny: reviewer writes a file", K, "guard", AS("reviewer", "Write", { file_path: path.join(R, "notes.md"), content: "x" }), R, true);

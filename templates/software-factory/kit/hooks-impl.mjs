@@ -125,8 +125,9 @@ function checkScriptLines(tool, ecwd) {
   FILE_LINES = [];
   for (const raw of lines) {
     const l = raw.trim();
-    if (!l || /^(#|\/\/|\/?\*|REM\b|::|<#)/i.test(l)) continue;
+    if (!l || /^(#(?!!)|\/\/)/.test(l)) continue; // shell/python and JS line comments only
     const both = `${l}\n${l.replace(/["'`\\]/g, "").replace(/\.exe\b/gi, "")}`;
+    if (PROTECTED_MENTION.test(l.replace(RUNNER, " ")) && WRITEY.test(l.replace(RUNNER, " "))) deny(`${tool}: a script this command runs may modify protected factory/git files. Line: ${l.slice(0, 120)}`);
     for (const [re, why] of HARD_DENY) if (BYPASS.test(why) && re.test(both)) deny(`${tool}: a script this command runs: ${why}. Line: ${l.slice(0, 120)}`);
     for (const [re, what] of SHIP) if (re.test(both)) shipGate(`${what} (inside a script this command runs)`, ecwd);
   }
