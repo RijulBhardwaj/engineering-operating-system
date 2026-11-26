@@ -96,8 +96,11 @@ function expandScripts(cmd, cwd) {
     out = out.replace(/\b(?:npm|pnpm|yarn)\s+(?:run\s+|run-script\s+)?(?:-s\s+|--silent\s+)?([\w:.-]+)(?!\s*\[)/g, (m, n) => (scripts[n] ? `${m} [${scripts[n]}]` : m));
   return expandFiles(out, cwd);
 }
-// Inline the text of script files a command runs (bash x.sh, node x.mjs, ./x, . x, pwsh -File x.ps1), two levels,
-// so `git push --no-verify` hidden in a self-written script is still seen. Kit runners are skipped (they are trusted).
+// Collect the text of script files a command runs (bash x.sh, node x.mjs, ./x, . x, pwsh -File x.ps1), two levels,
+// so a push or hook bypass hidden in a self-written script is still seen. Kit runners are skipped (they are trusted).
+// File text is NOT matched against every command rule (scripts legitimately clean up, mention deploys in comments):
+// checkScriptLines applies only the ship gate and the gate-bypass rules, line by line, skipping comments.
+let FILE_LINES = [];
 const SCRIPT_REF = /(?:(?:\b(?:bash|sh|zsh|python3?|py|node|pwsh|perl|ruby)\s*<|\$\(\s*(?:cat|type|Get-Content)|--(?:import|require|loader)[=\s]?|\s-r)\s*|\b(?:bash|sh|zsh|source|node|deno\s+run|bun|python3?|py|perl|ruby|pwsh|powershell)(?:\.exe)?(?:\s+-(?:File|ExecutionPolicy\s+\S+|NoProfile|\w))*\s+|(?:^|[;&|]\s*)\.\s+|(?:^|[;&|(]\s*)(?=\.{1,2}\/))("[^"]+"|'[^']+'|[^\s;&|()<>]+)/g;
 function expandFiles(cmd, cwd, depth = 0) {
   if (depth > 1) return cmd;
@@ -111,8 +114,22 @@ function expandFiles(cmd, cwd, depth = 0) {
     const inner = () => (/\s|\$\(/.test(name) ? `${m} [${expandFiles(name, cwd, depth + 1)}]` : m);
     try { p = path.resolve(cwd, name.replace(/^\/([a-zA-Z])\//, "$1:/")); if (!fs.statSync(p).isFile()) return inner(); } catch { return inner(); }
     const txt = fs.readFileSync(p, "utf8").slice(0, 65536);
-    return `${m} [file: ${expandFiles(txt, path.dirname(p), depth + 1)}]`;
+    FILE_LINES.push(...txt.split(/\r?\n/));
+    expandFiles(txt, path.dirname(p), depth + 1);
+    return m;
   });
+}
+const BYPASS = /--no-verify|skips hooks|hooks path|aliases|force push|credentials|audit key|key files|deleting branches/;
+function checkScriptLines(tool, ecwd) {
+  const lines = FILE_LINES;
+  FILE_LINES = [];
+  for (const raw of lines) {
+    const l = raw.trim();
+    if (!l || /^(#|\/\/|\/?\*|REM\b|::|<#)/i.test(l)) continue;
+    const both = `${l}\n${l.replace(/["'`\\]/g, "").replace(/\.exe\b/gi, "")}`;
+    for (const [re, why] of HARD_DENY) if (BYPASS.test(why) && re.test(both)) deny(`${tool}: a script this command runs: ${why}. Line: ${l.slice(0, 120)}`);
+    for (const [re, what] of SHIP) if (re.test(both)) shipGate(`${what} (inside a script this command runs)`, ecwd);
+  }
 }
 
 function effectiveCwd(cmd, cwd) {
@@ -174,7 +191,9 @@ function checkCommand(cmd, cwd, tool) {
   if (typeof cmd !== "string" || !cmd.trim()) deny(`${tool}: empty command`);
   const ecwd = effectiveCwd(cmd, cwd);
   // Match on the expanded text and on a de-obfuscated copy (quotes/backslashes/.exe stripped: gi''t, git.exe, g\it).
+  FILE_LINES = [];
   const exp = expandScripts(cmd, ecwd);
+  checkScriptLines(tool, ecwd);
   const full = `${exp}\n${exp.replace(/["'`\\]/g, "").replace(/\.exe\b/gi, "")}`;
   for (const [re, why] of HARD_DENY) if (re.test(full)) deny(`${tool}: ${why}.`);
   for (const seg of full.split(/&&|\|\||;|\|/)) {
@@ -211,7 +230,8 @@ const TMP_REDIRECT = /\d?>>?\s*["']?(\$\{?TE?MP\}?|\/tmp\/|%TE?MP%|\$env:TE?MP)[
 function roleGate(role, tool, ti) {
   if (!role) return;
   const cmd = String(ti.command || ti.text || "").replace(RUNNER, " ").replace(TMP_REDIRECT, " ");
-  const bare = cmd.replace(/"(?:[^"\\]|\\.)*"|'[^']*'/g, '""'); // quoted text (grep patterns, messages) is not a write
+  // Quoted text (grep patterns, messages) is not a write, except the body of `sh -c "..."` / `pwsh -Command "..."`.
+  const bare = cmd.replace(/(\s-(?:c|Command|EncodedCommand)\s+)?("(?:[^"\\]|\\.)*"|'[^']*')/gi, (m, flag) => (flag ? m : '""'));
   const shell = /^(Bash|PowerShell|mcp__terminal__run_in_terminal)$/.test(tool);
   const edit = /^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool);
   if (READ_ONLY_ROLES.has(role)) {
@@ -401,11 +421,18 @@ function afterTheFact(c, unprotect) {
   fs.writeFileSync(sp, JSON.stringify(now));
   if (!prev) return notes;
   const tips = new Set(Object.values(refs("refs/heads")));
+  // Tokens live in each worktree's own .factory/, so a push from a worktree is checked against all of them.
+  const trees = L.git(["worktree", "list", "--porcelain"], { check: false }).split("\n").filter((l) => l.startsWith("worktree ")).map((l) => l.slice(9));
+  const audited = (sha) => [L.ROOT, ...trees].some((t) => { try { return L.verifyToken(sha, t, { requireHead: false, requireClean: false }).ok; } catch { return false; } }); // a broken worktree just has no token
   for (const [ref, sha] of Object.entries(now.remotes)) {
     if (prev.remotes?.[ref] === sha || !tips.has(sha) || /\/HEAD$/.test(ref)) continue;
-    if (!L.verifyToken(sha, L.ROOT, { requireHead: false, requireClean: false }).ok) notes.push(`${ref} moved to ${sha.slice(0, 12)}, which has no valid audit token: an unaudited push got past the gates. Tell the user now.`);
+    // Only our pushes count; a fetch or pull that moves the ref is someone else's audited-or-not history.
+    if (!/update by push/.test(L.git(["reflog", "-1", "--format=%gs", ref], { check: false }))) continue;
+    if (!audited(sha)) notes.push(`${ref} moved to ${sha.slice(0, 12)}, which has no valid audit token: an unaudited push got past the gates. Tell the user now.`);
   }
-  if (prev.head && now.head && prev.head !== now.head && L.gitOk(["merge-base", "--is-ancestor", prev.head, now.head])) {
+  // Kit changes only count when made by a new commit here (not a checkout, switch, pull or reset onto other history).
+  const how = L.git(["reflog", "-1", "--format=%gs", "HEAD"], { check: false });
+  if (/^(commit|am|cherry-pick|revert)\b/.test(how) && prev.head && now.head && prev.head !== now.head && L.gitOk(["merge-base", "--is-ancestor", prev.head, now.head])) {
     const kit = L.git(["diff", "--name-only", `${prev.head}..${now.head}`, "--", ...KIT_PATHS], { check: false }).split("\n").filter((f) => f && !(unprotect && unprotect.test(f)));
     if (kit.length) notes.push(`new commits changed factory files (${kit.join(", ")}). Factory changes need the user; this branch cannot be merged by an agent.`);
   }

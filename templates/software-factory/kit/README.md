@@ -51,7 +51,8 @@ Commit trailers: `TEST-REMOVAL-APPROVED: <why>`, `LARGE-DIFF-APPROVED: <why>`, `
 
 ## Known limits
 - Every local check runs as the same Windows user as Claude, so a determined process could forge a token or edit files by indirect means. The HMAC token catches stale, edited and accidental tokens, not a deliberate attack. Real enforcement for `main` needs GitHub branch protection with the CI check required, which only the repo owner can turn on.
-- Shell analysis is pattern based, and script files a command runs are scanned inline (two levels), but obfuscated or generated code can still slip past `guard`; pre-push re-checks every pushed ref independently.
+- Shell analysis is pattern based. Script files a command runs (`bash f`, `node f`, `./f`, `bash < f`, `$(cat f)`, `--import f`; two levels) are read line by line, comments skipped, and checked only against the ship gate and the gate-bypass rules (no-verify, hooks path, aliases, force push, branch deletion, credentials, the audit key); ordinary cleanup in scripts is not blocked. Other ways to run code (`cat f | sh`, imports inside a module, generated code) are not scanned; postshell's after-the-fact check and pre-push are the backstop.
+- `git apply`/`git am` of a patch can commit kit changes. postshell flags it at once, factory-integrity then needs a waiver, and waived work cannot be merged by an agent.
 - Waiver trailers and `--record` reviews are written by the agent itself. They are logged, and waived work cannot be merged by an agent, but they are not proof that a person approved.
 - Role limits are pattern based (a probe script in the temp dir can still write); they stop accidents and casual drift, not a determined agent.
 - Role limits depend on Claude Code putting `agent_type` in the hook input inside subagents; where it is absent the limits do not apply.

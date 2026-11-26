@@ -101,6 +101,11 @@ expectHook(A, "deny: script run as ./path", K, "guard", { tool_name: "Bash", too
 expectHook(A, "deny: script fed on stdin", K, "guard", bash(`bash < "${hid.replace(/\\/g, "/")}"`), R, true);
 expectHook(A, "deny: script via $(cat f)", K, "guard", bash(`sh -c "$(cat '${hid.replace(/\\/g, "/")}')"`), R, true);
 fs.rmSync(hid, { force: true });
+// Ordinary scripts must still run: comments mentioning deploys, and cleanup commands, are not gated.
+const ok = path.join(os.tmpdir(), `factory-selftest-ok-${process.pid}.sh`);
+fs.writeFileSync(ok, "#!/bin/sh\n# checks against a running Worker (wrangler dev); deploy happens elsewhere (stage 3)\n// git push is done by CI\nrm -rf build dist\ngit reset --hard HEAD 2>/dev/null || true\necho ok\n");
+expectHook(A, "allow: ordinary script (deploy in comments, cleanup)", K, "guard", bash(`bash "${ok.replace(/\\/g, "/")}"`), R, false);
+fs.rmSync(ok, { force: true });
 // Role limits keyed on agent_type.
 const AS = (role, tool, ti) => ({ tool_name: tool, tool_input: ti, cwd: R, agent_type: role });
 expectHook(A, "deny: reviewer writes a file", K, "guard", AS("reviewer", "Write", { file_path: path.join(R, "notes.md"), content: "x" }), R, true);
@@ -117,6 +122,7 @@ expectHook(A, "deny: reviewer redirects into the repo", K, "guard", AS("reviewer
 expectHook(A, "allow: reviewer greps for an arrow", K, "guard", AS("reviewer", "Bash", { command: 'grep -rn "=>" src | head' }), R, false);
 expectHook(A, "deny: reviewer inline eval", K, "guard", AS("reviewer", "Bash", { command: "node -e \"require('fs').writeFileSync('x','y')\"" }), R, true);
 expectHook(A, "allow: blind-qa curl --head", K, "guard", AS("blind-qa", "Bash", { command: "curl --head http://127.0.0.1:4100/" }), R, false);
+expectHook(A, "deny: reviewer writes via sh -c", K, "guard", AS("reviewer", "Bash", { command: 'bash -c "echo x > notes.txt"' }), R, true);
 expectHook(A, "deny: planner writes source", K, "guard", AS("planner", "Write", { file_path: path.join(R, "src", "x.ts"), content: "x" }), R, true);
 expectHook(A, "allow: planner writes a spec", K, "guard", AS("planner", "Write", { file_path: path.join(R, "docs", "specs", "x.md"), content: "x" }), R, false);
 
@@ -237,6 +243,11 @@ try {
   r = hook(SK, "postshell", { tool_name: "Bash", tool_input: { command: "x" }, cwd: repo }, repo);
   rec(B, "post-shell detects an unaudited push", r.status === 2 && /unaudited push/.test(r.stderr), r.stderr);
   rec(B, "post-shell detects a commit to the factory", /changed factory files/.test(r.stderr), r.stderr);
+  r = hook(SK, "postshell", { tool_name: "Bash", tool_input: { command: "x" }, cwd: repo }, repo);
+  rec(B, "post-shell is quiet when nothing changed", r.status === 0, r.stderr);
+  sh("git fetch -q origin");
+  r = hook(SK, "postshell", { tool_name: "Bash", tool_input: { command: "x" }, cwd: repo }, repo);
+  rec(B, "post-shell is quiet after a fetch", r.status === 0, r.stderr);
   r = hook(SK, "session", { session_id: "s" }, repo);
   rec(B, "session hook prints factory banner, no alarms", /software-factory:selftest/.test(r.stdout) && !/ALARM/.test(r.stdout), r.stdout);
 } finally {
