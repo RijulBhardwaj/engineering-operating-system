@@ -170,6 +170,7 @@ await step("dependencies", true, async () => {
   }
   const problems = [];
   for (const { n, py } of added) {
+    if (!/^(@[a-z0-9._-]+\/)?[a-z0-9._-]+$/i.test(n)) { problems.push(`${JSON.stringify(n)}: invalid package name`); continue; }
     const r = py
       ? await L.run(`python -c "import json,sys,urllib.request;d=json.load(urllib.request.urlopen('https://pypi.org/pypi/'+sys.argv[1]+'/json',timeout=15));print(min((f['upload_time'] for v in d['releases'].values() for f in v),default=''))" ${n}`, { timeoutSec: 30 })
       : await L.run(`npm view "${n}" time.created --json`, { timeoutSec: 30 });
@@ -225,7 +226,7 @@ await step("review", c.review?.required !== false, async () => {
   }
   if (!fs.existsSync(p)) return { fail: "no independent review for HEAD (run node .claude/factory/review.mjs)" };
   const rv = JSON.parse(fs.readFileSync(p, "utf8"));
-  const high = (rv.findings || []).filter((f) => /high|critical/i.test(f.severity || ""));
+  if (!L.recordValid(rv) || rv.sha !== sha) return { fail: "review record is unsigned, tampered or for another commit; re-run review.mjs" };  const high = (rv.findings || []).filter((f) => /high|critical/i.test(f.severity || ""));
   if (high.length) return { fail: `reviewer (${rv.model}) found ${high.length} high-severity issue(s):\n${high.map((f) => `- ${f.file || ""}:${f.line || ""} ${f.title}`).join("\n")}` };
   return { note: `reviewer ${rv.model}: ${(rv.findings || []).length} findings, none high` };
 });

@@ -79,6 +79,18 @@ export function ensureKey(cwd = ROOT) {
 const canon = (o) => JSON.stringify(o, (k, v) => (v && typeof v === "object" && !Array.isArray(v) ? Object.fromEntries(Object.keys(v).sort().map((x) => [x, v[x]])) : v));
 const mac = (key, body) => crypto.createHmac("sha256", key).update(canon(body)).digest("hex");
 
+// Sign/verify small records (review results) with the same per-project key.
+export function signRecord(body, cwd = ROOT) { return { ...body, hmac: mac(ensureKey(cwd), body) }; }
+export function recordValid(rec, cwd = ROOT) {
+  if (!rec || typeof rec.hmac !== "string") return false;
+  const { hmac, ...body } = rec;
+  const kp = keyPath(cwd);
+  if (!fs.existsSync(kp)) return false;
+  const want = Buffer.from(mac(fs.readFileSync(kp, "utf8").trim(), body), "hex");
+  const got = /^[0-9a-f]{64}$/.test(hmac) ? Buffer.from(hmac, "hex") : Buffer.alloc(0);
+  return got.length === want.length && crypto.timingSafeEqual(got, want);
+}
+
 export function tokenPath(sha, cwd = ROOT) { return path.join(STATE_DIR(cwd), "audit", `${sha}.json`); }
 export function writeToken(body, cwd = ROOT) {
   const p = tokenPath(body.sha, cwd);
@@ -163,6 +175,24 @@ export function killTree(pid) {
   if (!pid) return;
   if (process.platform === "win32") spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], { windowsHide: true, stdio: "ignore" });
   else { try { process.kill(-pid, "SIGKILL"); } catch { try { process.kill(pid, "SIGKILL"); } catch {} } }
+}
+
+// PIDs listening on a local TCP port (netstat on Windows, lsof elsewhere).
+export function portOwners(port) {
+  const pids = new Set();
+  if (process.platform === "win32") {
+    const out = spawnSync("netstat", ["-ano", "-p", "TCP"], { encoding: "utf8", windowsHide: true }).stdout || "";
+    const out6 = spawnSync("netstat", ["-ano", "-p", "TCPv6"], { encoding: "utf8", windowsHide: true }).stdout || "";
+    for (const line of (out + out6).split(/\r?\n/)) {
+      const f = line.trim().split(/\s+/);
+      if (f.length >= 5 && /LISTENING/i.test(f[3]) && f[1].endsWith(`:${port}`) && /^\d+$/.test(f[4]) && f[4] !== "0") pids.add(Number(f[4]));
+    }
+  } else {
+    const out = spawnSync("lsof", ["-t", `-iTCP:${port}`, "-sTCP:LISTEN"], { encoding: "utf8" }).stdout || "";
+    for (const s of out.split(/\s+/)) if (/^\d+$/.test(s)) pids.add(Number(s));
+  }
+  pids.delete(process.pid);
+  return [...pids];
 }
 
 // --- paths: Windows-aware, case-insensitive, Git Bash style, ~, trailing dots/spaces, ADS

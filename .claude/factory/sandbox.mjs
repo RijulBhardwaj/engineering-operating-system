@@ -64,6 +64,9 @@ export async function down() {
   L.killTree(st.pid);
   let freed = false;
   for (let i = 0; i < 40 && !freed; i++) { freed = await L.portFree(st.port); if (!freed) await sleep(250); }
+  // Git Bash re-parents grandchildren (e.g. vite), so /T misses them; the port was free at `up`, so its listener is ours.
+  if (!freed) { for (const pid of L.portOwners(st.port)) L.killTree(pid);
+    for (let i = 0; i < 40 && !freed; i++) { freed = await L.portFree(st.port); if (!freed) await sleep(250); } }
   fs.rmSync(stateFile(), { force: true });
   if (!freed) throw new Error(`port ${st.port} still in use after teardown (orphan process)`);
   return { freed, port: st.port };

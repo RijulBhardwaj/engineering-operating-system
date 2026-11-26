@@ -45,8 +45,8 @@ const SHIP = [
   [/\bgit\b(?:\s+-[cC]\s+(?:"[^"]*"|'[^']*'|\S+)|\s+--?[a-z-]+(?:=\S+)?)*\s+push\b/i, "git push"],
   [/\bgh\s+pr\s+(create|merge|ready)\b/i, "gh pr create/merge/ready"],
   [/\bgh\s+release\b/i, "gh release"],
-  [/\bwrangler\s+(deploy|publish|pages\s+deploy|versions\s+(upload|deploy)|rollback)\b(?![^;&|]*--dry-run)/i, "wrangler deploy"],
-  [/\bsupabase\s+(db\s+push|functions\s+deploy|link|migration\s+up)\b/i, "supabase deploy"],
+  [/\bwrangler\b(?![^;&|]*--dry-run)[^;&|]*\b(deploy|publish|upload|rollback|secret|delete)\b/i, "wrangler deploy"],
+  [/\bsupabase\b[^;&|]*\b(db\s+push|deploy|link|migration\s+up|secrets|db\s+reset)\b/i, "supabase deploy"],
   [/\b(npm|pnpm|yarn)\s+publish\b/i, "package publish"],
   [/\b(vercel|netlify)\b.*\b(deploy|--prod)\b/i, "hosted deploy"],
 ];
@@ -64,16 +64,18 @@ const HARD_DENY = [
   [/\bgit\s+push\b.*(\s-f\b|--force|\s\+\S)/i, "force push"],
   [/\bgh\s+auth\s+(token|logout|refresh|setup-git)\b/i, "GitHub credentials"],
   [/\bgh\s+(repo\s+(delete|edit|rename|archive)|secret|variable|ruleset)\b|\bgh\s+api\b.*\/(protection|rulesets|collaborators|keys|hooks)\b/i, "GitHub settings/credentials need the user"],
-  [/\bgh\s+api\b.*(\s-X\s*(?!GET\b)\w+|--method[\s=](?!GET\b)\w+|\s-[fF]\s|--field|--raw-field|\bgraphql\b)/i, "non-GET GitHub API calls"],
-  [/factory-audit-[a-z0-9-]*\.key|\.factory[\\/]+audit/i, "factory audit key/tokens are off limits"],
+  [/\bgh\s+api\b.*(\s-X\s*(?!GET\b)\w+|--method[\s=](?!GET\b)\w+|\s-[fF]\s|--field|--raw-field|--input\b|\bgraphql\b)/i, "non-GET GitHub API calls"],
+  [/factory-audit|\.factory[\\/]+(audit|review)\b/i,"factory audit key, tokens and review records are off limits"],
+  [/(^|[;&|]\s*)\$\{?\w+\}?\s+push\b|\beval\b.*\bpush\b/i, "indirect git invocation"],
   [/\b(Invoke-Expression|iex)\b|-EncodedCommand\b|\bbase64\s+(-d|--decode)\b.*\|\s*(ba)?sh/i, "encoded/evaluated commands"],
 ];
-const PROTECTED_MENTION = /(\.claude[\\/]+(factory|settings(\.local)?\.json|agents)|\.git[\\/]+(hooks|config)|\.github[\\/]+workflows[\\/]+factory\.yml)/i;
+// Matches protected names even when reached via `cd .claude && ... factory/x` (no full path in the command).
+const PROTECTED_MENTION = /(\.claude\b|\.factory\b|\bfactory[\\/]|factory\.json|hooks-impl|hook\.mjs|settings(\.local)?\.json|\bagents[\\/]|\.git[\\/]+(hooks|config)|pre-push|\.github[\\/]+workflows[\\/]+factory\.yml|\.gitattributes)/i;
 const WRITEY = /(>|\btee\b|\bsed\s+-i|\b(cp|mv|rm|del|ln|touch|truncate|chmod|attrib|copy|move|xcopy|robocopy)\b|\b(Set|Add|Clear)-Content\b|\bOut-File\b|\b(New|Copy|Move|Remove|Rename)-Item\b|\bgit\s+(checkout|restore|rm|mv|apply|am)\b|\b(node|python|py|perl|ruby|deno|bun)\b|\bpowershell\b|\bpwsh\b)/i;
 const RUNNER = /\bnode\s+["']?(?:\.\/)?\.claude[\\/]factory[\\/](audit|verify|sandbox|selftest|review|status)\.mjs\b[^;&|>]*/gi;
 const EVAL = /\b(node|bun|deno)\s+(-e|-p|--eval|--print|eval)\b|\b(python3?|py)\s+-c\b|\beval\s/i;
 const SHIPWORDS = /push|deploy|publish|merge|release|writeToken|hmac|hookspath|factory|\.git\b|settings\.json/i;
-const RM_ROOTISH = /^(\/|\/\*|~\/?|~\/\*|\.\.?\/?|\.\.[\\/].*|\*|[a-zA-Z]:[\\/]?\*?|\$HOME[\\/]?\*?|\$\{HOME\}[\\/]?\*?|%USERPROFILE%)$/;
+const RM_ROOTISH = /^(\/|\/\*|\/[a-zA-Z]\/?\*?|~\/?|~\/\*|\.\.?\/?|\.\.[\\/].*|\*|[a-zA-Z]:[\\/]?\*?|\$HOME[\\/]?\*?|\$\{HOME\}[\\/]?\*?|%USERPROFILE%)$/;
 
 function npmScripts(cwd) {
   try { return JSON.parse(fs.readFileSync(path.join(cwd, "package.json"), "utf8")).scripts || {}; } catch { return {}; }
@@ -140,7 +142,9 @@ function depGate(cmd) {
 function checkCommand(cmd, cwd, tool) {
   if (typeof cmd !== "string" || !cmd.trim()) deny(`${tool}: empty command`);
   const ecwd = effectiveCwd(cmd, cwd);
-  const full = expandScripts(cmd, ecwd);
+  // Match on the expanded text and on a de-obfuscated copy (quotes/backslashes/.exe stripped: gi''t, git.exe, g\it).
+  const exp = expandScripts(cmd, ecwd);
+  const full = `${exp}\n${exp.replace(/["'`\\]/g, "").replace(/\.exe\b/gi, "")}`;
   for (const [re, why] of HARD_DENY) if (re.test(full)) deny(`${tool}: ${why}.`);
   for (const seg of full.split(/&&|\|\||;|\|/)) {
     const t = seg.trim().split(/\s+/);
@@ -162,7 +166,7 @@ function checkCommand(cmd, cwd, tool) {
 }
 
 // ---------- MCP / other tools ----------
-const MCP_ALLOW = /^mcp__(hearthbot|ccd_|claude-code-remote|visualize|Claude_Browser|playwright|claude-in-chrome|plugin_ecc_chrome-devtools|d1e572d8)/;
+const MCP_ALLOW = /^mcp__(hearthbot__|visualize__|Claude_Browser__|playwright__|claude-in-chrome__|plugin_ecc_chrome-devtools__|d1e572d8[^_]*__|ccd_session__mark_chapter$|ccd_view__)/;
 const MCP_ALLOW_DENY = /__(delete|archive|move_to_cloud|set_session_permission_mode|set_remote_control|file_upload|upload_image)/;
 const MCP_DENY = /(deploy|migration|merge|secret|env_var|promote|rollback|delete|apply_|publish|push|create_project|pause|restore|execute_sql|share|trash|bash|workbench|proxy_execute|multi_execute|write_file|edit_block|move_file|start_process|interact_with_process|create_directory|run_in_terminal|computer-use|create_branch|reset_branch|rebase_branch|set_app|upload|attach_domain|create_pull|update_file|create_file|copy_file|label|spam|send|draft|create_event|update_event)/i;
 
@@ -174,7 +178,8 @@ async function guard() {
   if (!tool) deny("hook input had no tool_name");
   if (/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) { checkWritePath(ti.file_path || ti.notebook_path, cwd, tool); return allow(); }
   if (/^(Read|Grep|Glob|LS)$/.test(tool)) {
-    if (/factory-audit-[a-z0-9-]*\.key/i.test(String(ti.file_path || ti.path || ti.pattern || ti.glob || ""))) deny(`${tool}: factory key is off limits`);
+    const target = [ti.file_path, ti.path, ti.pattern, ti.glob].filter(Boolean).join(" ");
+    if (/factory-audit|(^|[\\/\s])\.git([\\/]|\s|$)/i.test(target)) deny(`${tool}: the .git directory and factory key are off limits to file tools; use git commands`);
     return allow();
   }
   if (tool === "Bash" || tool === "PowerShell") { checkCommand(ti.command, cwd, tool); return allow(`${tool} ${String(ti.command).slice(0, 160).replace(/\s+/g, " ")}`); }
@@ -184,9 +189,11 @@ async function guard() {
   }
   if (tool === "mcp__terminal__run_in_terminal") { checkCommand(ti.command || ti.text, cwd, tool); return allow(tool); }
   if (tool.startsWith("mcp__")) {
-    if (MCP_ALLOW.test(tool) && !MCP_ALLOW_DENY.test(tool)) return allow();
-    if (MCP_DENY.test(tool) || MCP_ALLOW_DENY.test(tool)) deny(`${tool} can change things outside the factory gates; ask the user`);
-    return allow(tool);
+    // Default deny: only the allowlisted servers, plus read-only verbs on any server.
+    if (MCP_ALLOW_DENY.test(tool) || MCP_DENY.test(tool.replace(/^mcp__(Claude_Browser|playwright|claude-in-chrome|plugin_ecc_chrome-devtools)__.*/, "")))
+      deny(`${tool} can change things outside the factory gates; ask the user`);
+    if (MCP_ALLOW.test(tool) || /__(get|list|read|search|query|fetch|find|describe|whoami|status|resolve|view)[a-z_-]*$/i.test(tool)) return allow();
+    deny(`${tool} is not on this factory's MCP allowlist; ask the user`);
   }
   return allow();
 }
@@ -318,7 +325,37 @@ async function session() {
   ].join("\n") + "\n");
 }
 
+// ---------- PostToolUse(shell): undo any tampering with the factory that slipped past the guard ----------
+const KIT_PATHS = [".claude/factory", ".claude/settings.json", ".claude/agents", ".gitattributes"];
+async function postShell() {
+  L.readStdinJson();
+  const c = L.cfg();
+  const unprotect = c.unprotect ? new RegExp(c.unprotect) : null;
+  const changed = L.git(["status", "--porcelain=v1", "-z", "--untracked-files=all", "--", ...KIT_PATHS], { raw: true })
+    .split("\0").filter(Boolean).map((e) => ({ st: e.slice(0, 2), f: e.slice(3) })).filter(({ f }) => !(unprotect && unprotect.test(f)));
+  const notes = [];
+  if (changed.length) {
+    const tracked = changed.filter((x) => x.st !== "??").map((x) => x.f);
+    if (tracked.length) L.git(["checkout", "HEAD", "--", ...tracked]);
+    for (const x of changed.filter((x) => x.st === "??")) fs.rmSync(path.join(L.ROOT, x.f), { force: true, recursive: true });
+    notes.push(`protected factory files were changed and have been restored from HEAD: ${changed.map((x) => x.f).join(", ")}`);
+  }
+  const pp = path.join(L.commonGitDir(), "hooks", "pre-push");
+  if (c.prePush !== false && !(fs.existsSync(pp) && fs.readFileSync(pp, "utf8").includes("software-factory"))) {
+    const r = spawnSync(process.execPath, [path.join(L.FACTORY_DIR, "install.mjs")], { cwd: L.ROOT, encoding: "utf8", windowsHide: true });
+    notes.push(`the pre-push gate was missing or altered and was reinstalled (exit ${r.status})`);
+  }
+  const hp = L.git(["config", "--get-all", "core.hooksPath"], { check: false });
+  if (hp) notes.push(`core.hooksPath is set to ${hp}; this disables the pre-push gate. Tell the user.`);
+  if (notes.length) {
+    L.log("guard", `TAMPER ${notes.join(" | ")}`);
+    process.stderr.write(`software-factory: ${notes.join("\n")}\nDo not modify the factory; ask the user.\n`);
+    process.exit(2);
+  }
+}
+
 export async function main(mode) {
+  if (mode === "postshell") return postShell();
   if (mode === "guard") return guard();
   if (mode === "post") return post();
   if (mode === "stop") return stop();

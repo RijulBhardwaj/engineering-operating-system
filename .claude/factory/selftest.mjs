@@ -47,6 +47,15 @@ const denyCmds = [
   ["hallucinated npm package", "npm install zz-factory-selftest-nonexistent-pkg-93ce3f"],
   ["wrangler deploy", "npx wrangler deploy"],
   ["supabase functions deploy", "supabase functions deploy api"],
+  ["read key via glob", "cat .git/factory-audit-*"],
+  ["write factory via cd + relative path", "cd .claude && echo '{}' > factory/factory.json"],
+  ["wrangler deploy with flags first", "npx wrangler --env production deploy"],
+  ["quote-obfuscated git push", "gi''t push origin HEAD"],
+  ["git.exe push", "git.exe push origin HEAD"],
+  ["variable as git", "g=git; $g push origin HEAD"],
+  ["gh api --input (POST)", "gh api repos/o/r/pulls --input body.json"],
+  ["rm -rf Git-Bash drive root", "rm -rf /c/"],
+  ["forge review record", "echo '{}' > .factory/review/abc.json"],
 ];
 for (const [n, cmd] of denyCmds) expectHook(A, `deny: ${n}`, K, "guard", bash(cmd), R, true);
 const scripts = (() => { try { return JSON.parse(fs.readFileSync(path.join(R, "package.json"), "utf8")).scripts || {}; } catch { return {}; } })();
@@ -66,6 +75,11 @@ expectHook(A, "deny: write .git/hooks/pre-push", K, "guard", W(path.join(R, ".gi
 expectHook(A, "deny: MCP migration tool", K, "guard", { tool_name: "mcp__729ae91e__apply_migration", tool_input: {}, cwd: R }, R, true);
 expectHook(A, "deny: MCP write_file bypass", K, "guard", { tool_name: "mcp__Desktop_Commander__write_file", tool_input: {}, cwd: R }, R, true);
 expectHook(A, "deny: remote subagent", K, "guard", { tool_name: "Agent", tool_input: { isolation: "remote", prompt: "x" }, cwd: R }, R, true);
+expectHook(A, "deny: Grep inside .git", K, "guard", { tool_name: "Grep", tool_input: { pattern: "x", path: ".git", glob: "*" }, cwd: R }, R, true);
+expectHook(A, "deny: unknown MCP settings tool", K, "guard", { tool_name: "mcp__ccd_settings__set_setting", tool_input: {}, cwd: R }, R, true);
+expectHook(A, "deny: unknown MCP config writer", K, "guard", { tool_name: "mcp__Desktop_Commander__set_config_value", tool_input: {}, cwd: R }, R, true);
+expectHook(A, "allow: read-only verb on other MCP", K, "guard", { tool_name: "mcp__someserver__list_things", tool_input: {}, cwd: R }, R, false);
+expectHook(A, "allow: browser click for blind QA", K, "guard", { tool_name: "mcp__Claude_Browser__computer", tool_input: {}, cwd: R }, R, false);
 expectHook(A, "fail closed: empty stdin", K, "guard", "", R, true);
 expectHook(A, "fail closed: garbage stdin", K, "guard", "{not json", R, true);
 for (const [n, cmd] of [["git status", "git status"], ["run audit", "node .claude/factory/audit.mjs"], ["run sandbox", "node .claude/factory/sandbox.mjs up"], ["rm -rf node_modules", "rm -rf node_modules"], ["read a factory file", "cat .claude/factory/factory.json"], ["npm install (lockfile)", "npm install"], ["gh api GET", "gh api repos/o/r/pulls"]])
@@ -158,6 +172,19 @@ try {
   sh('git commit -qam "chore: tweak factory"');
   r = sh("node .claude/factory/audit.mjs");
   rec(B, "audit fails on unapproved factory change", r.status !== 0 && /FAIL factory-integrity/.test(r.stdout), r.stdout.slice(-400));
+  sh("git reset -q --hard HEAD~1");
+  const fj = path.join(repo, ".claude", "factory", "factory.json");
+  const fjGood = fs.readFileSync(fj, "utf8");
+  fs.writeFileSync(fj, fjGood.replace('"prePush": true', '"prePush": false'));
+  fs.writeFileSync(path.join(repo, ".claude", "factory", "evil.mjs"), "x");
+  r = hook(SK, "postshell", { tool_name: "Bash", tool_input: { command: "x" }, cwd: repo }, repo);
+  rec(B, "post-shell: tampered factory.json restored + extra file removed (exit 2)", r.status === 2 && fs.readFileSync(fj, "utf8") === fjGood && !fs.existsSync(path.join(repo, ".claude", "factory", "evil.mjs")), r.stderr);
+  const pp = path.join(repo, ".git", "hooks", "pre-push");
+  fs.writeFileSync(pp, "#!/bin/sh\nexit 0\n");
+  r = hook(SK, "postshell", { tool_name: "Bash", tool_input: { command: "x" }, cwd: repo }, repo);
+  rec(B, "post-shell: replaced pre-push gate reinstalled", r.status === 2 && fs.readFileSync(pp, "utf8").includes("software-factory"), r.stderr);
+  const rv = spawnSync(process.execPath, ["--input-type=module", "-e", `import * as L from ${JSON.stringify("file:///" + path.join(SK, "lib.mjs").replace(/\\/g, "/"))}; const s = L.signRecord({sha:"a",findings:[]}); const f = {...s, findings:[{severity:"low",title:"x"}]}; console.log(L.recordValid(s), L.recordValid(f), L.recordValid({sha:"a",findings:[]}));`], { cwd: repo, encoding: "utf8" });
+  rec(B, "review records: signed valid, edited/unsigned rejected", rv.stdout.trim() === "true false false", rv.stdout + rv.stderr);
   r = hook(SK, "session", { session_id: "s" }, repo);
   rec(B, "session hook prints factory banner, no alarms", /software-factory:selftest/.test(r.stdout) && !/ALARM/.test(r.stdout), r.stdout);
 } finally {

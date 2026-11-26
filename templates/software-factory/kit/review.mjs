@@ -62,5 +62,5 @@ console.log(`review: ${parsed.findings.length} findings (${parsed.findings.filte
 function write(obj) {
   const p = path.join(L.STATE_DIR(), "review", `${sha}.json`);
   fs.mkdirSync(path.dirname(p), { recursive: true });
-  fs.writeFileSync(p, JSON.stringify({ sha, base, ts: new Date().toISOString(), ...obj }, null, 2));
+  fs.writeFileSync(p, JSON.stringify(L.signRecord({ sha, base, ts: new Date().toISOString(), ...obj }), null, 2));
 }
