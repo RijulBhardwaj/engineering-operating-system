@@ -21,3 +21,7 @@ knowledge/.obsidian/
 tools/obscura/
 tools/blender-portable/
 harness/video-generation/_eval/blender-grease-pencil/frames/
+# software factory runtime state
+.factory/
+.claude/worktrees/
+.claude/settings.local.json

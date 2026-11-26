@@ -1,0 +1,80 @@
+{
+  "name": "lynceon-ai",
+  "defaultBranch": "main",
+  "ports": [
+    4200,
+    4219
+  ],
+  "prePush": true,
+  "fastChecks": {
+    ".js": "node --check {file}",
+    ".mjs": "node --check {file}",
+    ".py": "python -m py_compile {file}"
+  },
+  "fastCheckSkip": "^(dist|node_modules|graphify-out|spike)/|/(dist|node_modules)/",
+  "stopCheck": "npm --prefix web run -s typecheck && npm --prefix web test -s && npm --prefix api test",
+  "stopCheckTimeoutSec": 280,
+  "sourceRegex": "^(web/src|api/src|worker/src|supabase/functions|scripts|db)/.*\\.([cm]?[jt]sx?|py|sql|css|html)$",
+  "testRegex": "(^|/)(tests?|__tests__)/|\\.(test|spec)\\.[cm]?[jt]sx?$|(^|/)test_[^/]+\\.py$",
+  "audit": [
+    {
+      "id": "web-typecheck",
+      "cmd": "npm --prefix web run -s typecheck",
+      "timeoutSec": 300
+    },
+    {
+      "id": "web-tests",
+      "cmd": "npm --prefix web test -s",
+      "timeoutSec": 600
+    },
+    {
+      "id": "api-tests",
+      "cmd": "npm --prefix api test",
+      "timeoutSec": 300
+    },
+    {
+      "id": "worker-tests",
+      "cmd": "cd worker && uv run --offline pytest -q",
+      "timeoutSec": 1200
+    },
+    {
+      "id": "edge-fn-check",
+      "cmd": "command -v deno >/dev/null || export PATH=\"$PATH:$LOCALAPPDATA/Microsoft/WinGet/Packages/DenoLand.Deno_Microsoft.Winget.Source_8wekyb3d8bbwe\"; command -v deno >/dev/null || { echo 'deno not installed (winget install DenoLand.Deno)'; exit 1; }; npm run -s check:api && npm run -s test:api",
+      "timeoutSec": 600
+    }
+  ],
+  "sandbox": {
+    "start": "npm --prefix web run dev -- --port {PORT} --strictPort --host 127.0.0.1",
+    "health": "/",
+    "bootTimeoutSec": 90,
+    "smoke": [
+      {
+        "path": "/",
+        "status": 200,
+        "contains": "<title>Lynceon"
+      }
+    ]
+  },
+  "duplication": {
+    "paths": [
+      "web/src",
+      "api/src"
+    ],
+    "threshold": 1,
+    "minLines": 6
+  },
+  "complexity": {
+    "ccn": 15,
+    "length": 100,
+    "required": false
+  },
+  "semgrep": {
+    "configs": [
+      "p/default"
+    ]
+  },
+  "review": {
+    "model": "opus"
+  },
+  "maxDiffLines": 1500
+}

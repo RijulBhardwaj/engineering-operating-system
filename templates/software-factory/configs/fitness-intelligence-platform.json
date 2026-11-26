@@ -1,0 +1,35 @@
+{
+  "name": "fitness-intelligence-platform",
+  "defaultBranch": "main",
+  "ports": [4100, 4119],
+  "prePush": true,
+  "fastChecks": {
+    ".ts": "npx --no-install eslint --no-warn-ignored {file}",
+    ".js": "node --check {file}",
+    ".mjs": "node --check {file}"
+  },
+  "fastCheckSkip": "^(dist|node_modules|graphify-out)/",
+  "stopCheck": "npm run -s typecheck && npm test -s",
+  "stopCheckTimeoutSec": 240,
+  "sourceRegex": "^(src|widget|demo|db|benchmark)/.*\\.([cm]?[jt]sx?|sql|html|css)$",
+  "testRegex": "(^|/)tests/|\\.(test|spec)\\.[cm]?[jt]sx?$",
+  "audit": [
+    { "id": "typecheck", "cmd": "npm run -s typecheck", "timeoutSec": 300 },
+    { "id": "lint", "cmd": "npm run -s lint", "timeoutSec": 300 },
+    { "id": "unit-tests", "cmd": "npm test -s", "timeoutSec": 600 }
+  ],
+  "sandbox": {
+    "start": "node demo/serve.js",
+    "health": "/",
+    "bootTimeoutSec": 30,
+    "smoke": [
+      { "path": "/", "status": 200, "contains": "<title>FitnessLLM" },
+      { "path": "/does-not-exist-factory-probe", "status": 404 }
+    ]
+  },
+  "duplication": { "paths": ["src"], "threshold": 5, "minLines": 6 },
+  "complexity": { "ccn": 15, "length": 100, "required": false },
+  "semgrep": { "configs": ["p/default"] },
+  "review": { "model": "opus" },
+  "maxDiffLines": 1500
+}
