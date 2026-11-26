@@ -21,6 +21,9 @@ async function prePush() {
     }
     const v = L.verifyToken(lsha, L.ROOT, { requireHead: false, requireClean: lsha === head });
     if (!v.ok) { console.error(`software-factory: push of ${lref} (${lsha.slice(0, 12)}) blocked: ${v.reason}`); bad++; continue; }
+    if (rref === `refs/heads/${L.cfg().defaultBranch}` && (v.token.waivers || []).length) {
+      console.error(`software-factory: push to ${rref} blocked: audit used waivers (${v.token.waivers.join("; ")}); only the owner merges waived work`); bad++; continue;
+    }
     // Re-run the cheap independent check rather than trusting the token alone.
     const range = rsha && !ZERO.test(rsha) ? `${rsha}..${lsha}` : `${v.token.base}..${lsha}`;
     const g = await L.run(`gitleaks git --no-banner --redact --exit-code 1 --log-opts="${range}" .`, { timeoutSec: 300 });

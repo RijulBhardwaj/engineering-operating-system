@@ -28,7 +28,11 @@ function checkWritePath(p, base, tool) {
   if (HOME_DENY.some((h) => L.normPath(p, base) === L.normPath(h))) deny(`${tool}: user-level Claude/git settings are off limits`);
   if (/factory-audit-[a-z0-9-]+\.key/i.test(p)) deny(`${tool}: factory key is off limits`);
   if (!L.inside(p, L.ROOT, base)) {
-    if (OUTSIDE_ALLOW.some((d) => L.inside(p, d, base))) return;
+    if (OUTSIDE_ALLOW.some((d) => L.inside(p, d, base))) {
+      // A worktree or clone in temp still carries a kit: keep its factory, settings, agents and git files protected.
+      if (/[\\/](\.claude[\\/](factory|agents)[\\/]|\.claude[\\/]settings(\.local)?\.json$|\.git[\\/]|\.factory[\\/]|\.gitattributes$)/i.test(L.normPath(p, base))) deny(`${tool}: ${p} is a protected factory/git file, even outside the project`);
+      return;
+    }
     deny(`${tool}: ${p} is outside this project (${L.ROOT}). Factories never write to other projects.`);
   }
   const rel = projectRel(p, base);
@@ -43,7 +47,8 @@ function checkWritePath(p, base, tool) {
 // ---------- shell command analysis ----------
 const SHIP = [
   [/\bgit\b(?:\s+-[cC]\s+(?:"[^"]*"|'[^']*'|\S+)|\s+--?[a-z-]+(?:=\S+)?)*\s+push\b/i, "git push"],
-  [/\bgh\s+pr\s+(create|merge|ready)\b/i, "gh pr create/merge/ready"],
+  [/\bgh\s+pr\s+(create|ready)\b/i, "gh pr create/ready"],
+  [/\bgh\s+pr\s+merge\b/i, "gh pr merge"],
   [/\bgh\s+release\b/i, "gh release"],
   [/\bwrangler\b(?![^;&|]*--dry-run)[^;&|]*\b(deploy|publish|upload|rollback|secret|delete)\b/i, "wrangler deploy"],
   [/\bsupabase\b[^;&|]*\b(db\s+push|deploy|link|migration\s+up|secrets|db\s+reset)\b/i, "supabase deploy"],
@@ -67,6 +72,7 @@ const HARD_DENY = [
   [/\bgh\s+auth\s+(token|logout|refresh|setup-git)\b/i, "GitHub credentials"],
   [/\bgh\s+(repo\s+(delete|edit|rename|archive)|secret|variable|ruleset)\b|\bgh\s+api\b.*\/(protection|rulesets|collaborators|keys|hooks)\b/i, "GitHub settings/credentials need the user"],
   [/\bgh\s+api\b.*(\s-X\s*(?!GET\b)\w+|--method[\s=](?!GET\b)\w+|\s-[fF]\s|--field|--raw-field|--input\b|\bgraphql\b)/i, "non-GET GitHub API calls"],
+  [/\.git[\\/]+[^\s"';&|]*(\*|\?|\[|\.key\b)|--git-common-dir/i, "globbing .git or reading key files inside it is off limits"],
   [/factory-audit|\.factory[\\/]+(audit|review)\b/i,"factory audit key, tokens and review records are off limits"],
   [/(^|[;&|]\s*)\$\{?\w+\}?\s+push\b|\beval\b.*\bpush\b/i, "indirect git invocation"],
   [/\b(Invoke-Expression|iex)\b|-EncodedCommand\b|\bbase64\s+(-d|--decode)\b.*\|\s*(ba)?sh/i, "encoded/evaluated commands"],
@@ -88,7 +94,23 @@ function expandScripts(cmd, cwd) {
   let out = cmd;
   for (let i = 0; i < 2; i++)
     out = out.replace(/\b(?:npm|pnpm|yarn)\s+(?:run\s+|run-script\s+)?(?:-s\s+|--silent\s+)?([\w:.-]+)(?!\s*\[)/g, (m, n) => (scripts[n] ? `${m} [${scripts[n]}]` : m));
-  return out;
+  return expandFiles(out, cwd);
+}
+// Inline the text of script files a command runs (bash x.sh, node x.mjs, ./x, . x, pwsh -File x.ps1), two levels,
+// so `git push --no-verify` hidden in a self-written script is still seen. Kit runners are skipped (they are trusted).
+const SCRIPT_REF = /(?:\b(?:bash|sh|zsh|source|node|deno\s+run|bun|python3?|py|perl|ruby|pwsh|powershell)(?:\.exe)?(?:\s+-(?:File|ExecutionPolicy\s+\S+|NoProfile|\w))*\s+|(?:^|[;&|]\s*)\.\s+|(?:^|[;&|(]\s*)(?=\.{1,2}\/))("[^"]+"|'[^']+'|[^\s;&|()<>]+)/g;
+function expandFiles(cmd, cwd, depth = 0) {
+  if (depth > 1) return cmd;
+  const seen = new Set();
+  return cmd.replace(SCRIPT_REF, (m, f) => {
+    const name = String(f).replace(/^["']|["']$/g, "");
+    if (/(^|[\\/])\.claude[\\/]factory[\\/]/.test(name) || seen.has(name)) return m;
+    seen.add(name);
+    let p;
+    try { p = path.resolve(cwd, name.replace(/^\/([a-zA-Z])\//, "$1:/")); if (!fs.statSync(p).isFile()) return m; } catch { return m; } // not a file: nothing to inline
+    const txt = fs.readFileSync(p, "utf8").slice(0, 65536);
+    return `${m} [file: ${expandFiles(txt, path.dirname(p), depth + 1)}]`;
+  });
 }
 
 function effectiveCwd(cmd, cwd) {
@@ -104,6 +126,8 @@ function shipGate(what, cwd) {
   const sha = L.head(cwd);
   const v = L.verifyToken(sha, cwd);
   if (!v.ok) deny(`${what} needs a passing factory audit for HEAD ${sha.slice(0, 12)}: ${v.reason}`);
+  // Waiver trailers are self-written, so waived work may be pushed for review but never merged by an agent.
+  if (/merge|release|deploy|publish/i.test(what) && (v.token.waivers || []).length) deny(`${what}: the audit for ${sha.slice(0, 12)} used waivers (${v.token.waivers.join("; ")}); only the owner can merge or ship waived work`);
   if (/gh pr/.test(what)) {
     const up = L.git(["rev-parse", "@{u}"], { cwd, check: false });
     if (up !== sha) deny(`${what}: push the audited HEAD first (upstream ${up ? up.slice(0, 12) : "none"} != HEAD ${sha.slice(0, 12)})`);
@@ -121,7 +145,10 @@ function depGate(cmd) {
   const args = toks.filter((a) => a && !a.startsWith("-") && !/^[./\\~]|:\/\/|^[a-zA-Z]:/.test(a));
   const names = isX ? args.slice(0, 1) : args;
   const lock = (() => { try { return fs.readFileSync(path.join(L.ROOT, "package-lock.json"), "utf8"); } catch { return ""; } })();
+  const t0 = Date.now();
   for (const raw of names) {
+    // Each lookup blocks up to 25s; stay inside the 50s hook watchdog by checking at most one more after 20s.
+    if (Date.now() - t0 > 20000) deny("too many new packages to verify in one command; install them a few at a time");
     const name = isPy ? raw.split(/[<>=!~[]/)[0] : raw.replace(/^(@?[^@]+)@.*$/, "$1");
     if (!name || (!isPy && lock.includes(`"node_modules/${name}"`))) continue;
     if (isX && fs.existsSync(path.join(L.ROOT, "node_modules", ".bin", name))) continue;
@@ -172,12 +199,35 @@ const MCP_ALLOW = /^mcp__(hearthbot__|visualize__|Claude_Browser__|playwright__|
 const MCP_ALLOW_DENY = /__(delete|archive|move_to_cloud|set_session_permission_mode|set_remote_control|file_upload|upload_image)/;
 const MCP_DENY = /(deploy|migration|merge|secret|env_var|promote|rollback|delete|apply_|publish|push|create_project|pause|restore|execute_sql|share|trash|bash|workbench|proxy_execute|multi_execute|write_file|edit_block|move_file|start_process|interact_with_process|create_directory|run_in_terminal|computer-use|create_branch|reset_branch|rebase_branch|set_app|upload|attach_domain|create_pull|update_file|create_file|copy_file|label|spam|send|draft|create_event|update_event)/i;
 
+// Per-agent limits, keyed on the hook input's agent_type (set inside subagents). Main session: no agent_type, no limits here.
+const READ_ONLY_ROLES = new Set(["reviewer", "scout", "blind-qa"]);
+const SHELL_WRITES = /((?<![2&])>(?!>?\s*(&\d|\/dev\/null\b|\$null\b|nul\b))|\btee\b|\bsed\s+-i|\b(cp|mv|rm|del|ln|touch|truncate|chmod|mkdir|copy|move|xcopy|robocopy)\b|\b(Set|Add|Clear)-Content\b|\bOut-File\b|\b(New|Copy|Move|Remove|Rename)-Item\b|\bgit\s+(add|commit|push|merge|rebase|reset|checkout|switch|stash|apply|am|cherry-pick|tag)\b|\bnpm\s+(i|install|add|uninstall)\b)/i;
+const SOURCE_READS = /\b(cat|head|less|more|grep|rg|sed|awk|type|Get-Content|Select-String|find|ls|dir|tree)\b|\bgit\s+(diff|show|log|blame|grep|ls-files|cat-file)\b/i;
+function roleGate(role, tool, ti) {
+  if (!role) return;
+  const cmd = String(ti.command || ti.text || "").replace(RUNNER, " ");
+  const shell = /^(Bash|PowerShell|mcp__terminal__run_in_terminal)$/.test(tool);
+  const edit = /^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool);
+  if (READ_ONLY_ROLES.has(role)) {
+    if (edit) deny(`${role} is read-only: ${tool} is not allowed`);
+    if (shell && SHELL_WRITES.test(cmd)) deny(`${role} is read-only: that command writes or changes git state`);
+  }
+  if (role === "blind-qa") {
+    if (/^(Read|Grep|Glob|LS)$/.test(tool) || (shell && SOURCE_READS.test(cmd))) deny("blind-qa tests through the running app only: reading source, diffs or listings is not allowed");
+  }
+  if (role === "planner") {
+    if (edit && !/^(docs|specs?)\//.test(projectRel(ti.file_path || ti.notebook_path || "", L.ROOT))) deny("planner writes specs only, under docs/ or specs/");
+    if (shell && SHELL_WRITES.test(cmd)) deny("planner writes specs only; shell writes and git changes are not allowed");
+  }
+}
+
 async function guard() {
   const inp = L.readStdinJson();
   const tool = inp.tool_name;
   const ti = inp.tool_input || {};
   const cwd = inp.cwd && fs.existsSync(inp.cwd) ? inp.cwd : L.ROOT;
   if (!tool) deny("hook input had no tool_name");
+  roleGate(String(inp.agent_type || "").replace(/^.*:/, ""), tool, ti);
   if (/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) { checkWritePath(ti.file_path || ti.notebook_path, cwd, tool); return allow(); }
   if (/^(Read|Grep|Glob|LS)$/.test(tool)) {
     const target = [ti.file_path, ti.path, ti.pattern, ti.glob].filter(Boolean).join(" ");

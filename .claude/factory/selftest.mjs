@@ -90,6 +90,25 @@ for (const [n, cmd] of [["git status", "git status"], ["run audit", "node .claud
 expectHook(A, "allow: Read", K, "guard", { tool_name: "Read", tool_input: { file_path: path.join(R, "README.md") }, cwd: R }, R, false);
 expectHook(A, "allow: hearthbot message", K, "guard", { tool_name: "mcp__hearthbot__post_message", tool_input: {}, cwd: R }, R, false);
 expectHook(A, "allow: write to temp dir", K, "guard", W(path.join(os.tmpdir(), "factory-selftest.txt")), R, false);
+expectHook(A, "deny: write a kit file in a temp worktree", K, "guard", W(path.join(os.tmpdir(), "wt", ".claude", "factory", "lib.mjs")), R, true);
+expectHook(A, "deny: glob key file in .git", K, "guard", bash("cat .git/*.key"), R, true);
+expectHook(A, "deny: locate git common dir", K, "guard", bash("cat $(git rev-parse --git-common-dir)/x"), R, true);
+// A self-written script that hides a push: its text is scanned inline.
+const hid = path.join(os.tmpdir(), `factory-selftest-${process.pid}.sh`);
+fs.writeFileSync(hid, "#!/bin/sh\ngit push --no-verify origin HEAD\n");
+expectHook(A, "deny: push hidden in a script file", K, "guard", bash(`bash "${hid.replace(/\\/g, "/")}"`), R, true);
+expectHook(A, "deny: script run as ./path", K, "guard", { tool_name: "Bash", tool_input: { command: `cd "${path.dirname(hid).replace(/\\/g, "/")}" && ./${path.basename(hid)}` }, cwd: R }, R, true);
+fs.rmSync(hid, { force: true });
+// Role limits keyed on agent_type.
+const AS = (role, tool, ti) => ({ tool_name: tool, tool_input: ti, cwd: R, agent_type: role });
+expectHook(A, "deny: reviewer writes a file", K, "guard", AS("reviewer", "Write", { file_path: path.join(R, "notes.md"), content: "x" }), R, true);
+expectHook(A, "deny: scout commits", K, "guard", AS("scout", "Bash", { command: 'git commit -am "x"' }), R, true);
+expectHook(A, "allow: reviewer reads the diff", K, "guard", AS("reviewer", "Bash", { command: "git diff origin/HEAD...HEAD 2>&1 | head" }), R, false);
+expectHook(A, "deny: blind-qa reads source", K, "guard", AS("blind-qa", "Bash", { command: "cat src/index.ts" }), R, true);
+expectHook(A, "deny: blind-qa uses Read", K, "guard", AS("blind-qa", "Read", { file_path: path.join(R, "README.md") }), R, true);
+expectHook(A, "allow: blind-qa curls the sandbox", K, "guard", AS("blind-qa", "Bash", { command: "curl -s http://127.0.0.1:4100/" }), R, false);
+expectHook(A, "deny: planner writes source", K, "guard", AS("planner", "Write", { file_path: path.join(R, "src", "x.ts"), content: "x" }), R, true);
+expectHook(A, "allow: planner writes a spec", K, "guard", AS("planner", "Write", { file_path: path.join(R, "docs", "specs", "x.md"), content: "x" }), R, false);
 
 // ---------------- Part B: scratch repo, full flows ----------------
 const B = "scratch";
@@ -188,6 +207,19 @@ try {
   rec(B, "post-shell: replaced pre-push gate reinstalled", r.status === 2 && fs.readFileSync(pp, "utf8").includes("software-factory"), r.stderr);
   const rv = spawnSync(process.execPath, ["--input-type=module", "-e", `import * as L from ${JSON.stringify("file:///" + path.join(SK, "lib.mjs").replace(/\\/g, "/"))}; const s = L.signRecord({sha:"a",findings:[]}); const f = {...s, findings:[{severity:"low",title:"x"}]}; console.log(L.recordValid(s), L.recordValid(f), L.recordValid({sha:"a",findings:[]}));`], { cwd: repo, encoding: "utf8" });
   rec(B, "review records: signed valid, edited/unsigned rejected", rv.stdout.trim() === "true false false", rv.stdout + rv.stderr);
+  // Waived work: pushable to a feature branch, never mergeable or pushable to the default branch by an agent.
+  sh("git checkout -qf main && git clean -fdq && git switch -qc feat/waived");
+  fs.rmSync(path.join(repo, "tests", "a.test.js"));
+  fs.writeFileSync(path.join(repo, "tests", "z.test.js"), '// replacement suite\nimport { test } from "node:test";\nimport { strictEqual } from "node:assert";\nimport * as m from "../a.js";\n\ntest("add of two and two", () => {\n  strictEqual(m.add(2, 2), 4);\n});\n');
+  sh('git add -A && git commit -qm "test: replace suite" -m "TEST-REMOVAL-APPROVED: selftest waiver flow"');
+  r = sh("node .claude/factory/audit.mjs");
+  rec(B, "audit passes with a waiver (logged)", r.status === 0 && /Waivers: (?!none)\S/.test(fs.readFileSync(path.join(repo, ".factory", "reports", `${sh("git rev-parse HEAD").stdout.trim()}.md`), "utf8")), r.stdout.split("\n").filter((x) => /^(FAIL|AUDIT)|waiv|test-tamper/i.test(x)).join(" | "));
+  r = sh("git push -q -u origin feat/waived");
+  rec(B, "waived work can be pushed to a feature branch", r.status === 0, r.stderr);
+  r = expectHook(B, "deny: gh pr merge of waived work", SK, "guard", SB("gh pr merge 1 --merge"), repo, true);
+  rec(B, "merge denial names the waiver", /waiver/i.test(r.stderr), r.stderr);
+  r = sh("git push -q origin HEAD:main");
+  rec(B, "pre-push blocks waived work to the default branch", r.status !== 0 && /waivers/.test(r.stderr), r.stderr);
   r = hook(SK, "session", { session_id: "s" }, repo);
   rec(B, "session hook prints factory banner, no alarms", /software-factory:selftest/.test(r.stdout) && !/ALARM/.test(r.stdout), r.stdout);
 } finally {

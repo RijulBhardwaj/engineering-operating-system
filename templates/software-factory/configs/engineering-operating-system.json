@@ -13,17 +13,44 @@
   },
   "stopCheck": null,
   "sourceRegex": "^(\\.claude/hooks|bootstrap|scripts|harness|tools)/.*\\.([cm]?js|sh|ps1|py)$",
-  "testRegex": "(^|/)tests?/|\\.(test|spec)\\.[cm]?js$",
+  "testRegex": "(^|/)tests?/|\\.(test|spec)\\.[cm]?js$|(^|/)selftest\\.mjs$",
   "audit": [
-    { "id": "yaml-valid", "cmd": "git ls-files '*.yaml' '*.yml' | python -c \"import sys,yaml;[list(yaml.safe_load_all(open(f.strip(),encoding='utf-8'))) for f in sys.stdin if f.strip()];print('yaml ok')\"", "timeoutSec": 120 },
-    { "id": "js-syntax", "cmd": "git ls-files '*.js' '*.mjs' | grep -v node_modules | while read -r f; do node --check \"$f\" || exit 1; done; echo js ok", "timeoutSec": 120 },
-    { "id": "sh-syntax", "cmd": "git ls-files '*.sh' | while read -r f; do bash -n \"$f\" || exit 1; done; echo sh ok", "timeoutSec": 120 },
-    { "id": "hooks-run", "cmd": "echo '{}' | node .claude/hooks/session-start.js >/dev/null && echo '{}' | node .claude/hooks/pre-compact-wiki-reminder.js >/dev/null && echo hooks ok", "timeoutSec": 60 }
+    {
+      "id": "yaml-valid",
+      "cmd": "git ls-files '*.yaml' '*.yml' | python -c \"import sys,yaml;[list(yaml.safe_load_all(open(f.strip(),encoding='utf-8'))) for f in sys.stdin if f.strip()];print('yaml ok')\"",
+      "timeoutSec": 120
+    },
+    {
+      "id": "js-syntax",
+      "cmd": "git ls-files '*.js' '*.mjs' | grep -v node_modules | while read -r f; do node --check \"$f\" || exit 1; done; echo js ok",
+      "timeoutSec": 120
+    },
+    {
+      "id": "sh-syntax",
+      "cmd": "git ls-files '*.sh' | while read -r f; do bash -n \"$f\" || exit 1; done; echo sh ok",
+      "timeoutSec": 120
+    },
+    {
+      "id": "hooks-run",
+      "cmd": "echo '{}' | node .claude/hooks/session-start.js >/dev/null && echo '{}' | node .claude/hooks/pre-compact-wiki-reminder.js >/dev/null && echo hooks ok",
+      "timeoutSec": 60
+    },
+    {
+      "id": "factory-selftest",
+      "cmd": "out=$(node .claude/factory/selftest.mjs 2>&1) && echo selftest ok || { printf '%s\\n' \"$out\" | grep -E '^(FAIL|selftest)'; exit 1; }",
+      "timeoutSec": 900
+    }
   ],
   "sandbox": null,
   "duplication": null,
   "complexity": null,
-  "semgrep": { "configs": ["p/default"] },
-  "review": { "model": "opus" },
+  "semgrep": {
+    "configs": [
+      "p/default"
+    ]
+  },
+  "review": {
+    "model": "opus"
+  },
   "maxDiffLines": 3000
 }
