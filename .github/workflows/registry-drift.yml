@@ -1,0 +1,26 @@
+name: registry-drift
+on:
+  pull_request:
+  push:
+    branches: [main]
+  # Checkpoint staleness changes with the calendar, not with commits, so also
+  # run daily to catch drift on days nobody pushes.
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  registry-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install --quiet pyyaml jsonschema
+      - name: Unit tests for the checker
+        run: python -m unittest discover -s scripts/registry -v
+      - name: Check project registry (profile block + checkpoint <= 14 days)
+        run: python scripts/registry/check_registry.py --max-age-days 14

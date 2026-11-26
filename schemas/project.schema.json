@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Project",
   "type": "object",
-  "required": ["project_id", "name", "status"],
+  "required": ["project_id", "name", "status", "profile", "last_checkpoint"],
   "properties": {
     "project_id": {"type": "string"},
     "name": {"type": "string"},
@@ -14,7 +14,19 @@
     "status": {"enum": ["planned", "in-progress", "paused", "complete", "archived"]},
     "current_milestone": {"type": "string"},
     "relevant_skills": {"type": "array", "items": {"type": "string"}},
-    "last_checkpoint": {"type": "string"},
-    "last_validation_status": {"type": "string"}
+    "last_checkpoint": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}", "description": "Must start with YYYY-MM-DD; rest is free text. Staleness checked by scripts/registry/check_registry.py."},
+    "last_validation_status": {"type": "string"},
+    "profile": {
+      "description": "Field meanings: workflows/end-to-end-development/README.md, 'Project profile' section.",
+      "type": "object",
+      "required": ["size", "risk", "ui", "team"],
+      "additionalProperties": false,
+      "properties": {
+        "size": {"enum": ["weekend", "small", "medium", "large"]},
+        "risk": {"enum": ["low", "elevated", "regulated"]},
+        "ui": {"enum": ["none", "basic", "rich"]},
+        "team": {"enum": ["solo-agent", "multi-agent"]}
+      }
+    }
   }
 }
