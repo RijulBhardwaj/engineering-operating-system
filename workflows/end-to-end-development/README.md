@@ -23,7 +23,7 @@ A `weekend`/`low`/`none` project still walks every stage -- Gate 0 included -- j
     status: active
     profile: { size: medium, risk: low, ui: rich, team: multi-agent }
 ```
-Any session working the project reads this block at session start (`CLAUDE.md`'s session-start checklist already says "check project-registry.yaml for this project's entry") and applies the scaling described above from there. **Current enforcement is this convention only -- no automated validator or lint check reads/enforces this schema yet.** It lives in the one file every session already reads first, which is a real step up from an unlocated convention, but it is not yet mechanically checked; that gap is a legitimate candidate for the self-optimization loop to propose fixing (e.g. a lint check that flags a registry entry missing a `profile:` block).
+Any session working the project reads this block at session start (`CLAUDE.md`'s session-start checklist already says "check project-registry.yaml for this project's entry") and applies the scaling described above from there. **Enforced by CI:** `profile` is required in [`schemas/project.schema.json`](../../schemas/project.schema.json), and [`scripts/registry/check_registry.py`](../../scripts/registry/check_registry.py) (run by `.github/workflows/registry-drift.yml` on every PR, push to main, and daily) fails when an entry lacks a valid `profile:` block or its `last_checkpoint` (must start with `YYYY-MM-DD`) is more than 14 days old. `paused`/`complete`/`archived` entries are exempt from the staleness check only. Run locally: `python3 scripts/registry/check_registry.py`.
 
 ## No agent spawns agents (hard platform constraint -- read before the stages below)
 
