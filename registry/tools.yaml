@@ -1,4 +1,4 @@
-# Software libraries, CLI tools and infrastructure platforms -- distinct from Claude skills/plugins/MCP servers.
+﻿# Software libraries, CLI tools and infrastructure platforms -- distinct from Claude skills/plugins/MCP servers.
 # Several items in the user's original list were classified here instead of skills.yaml because they are
 # standalone software for a future application, not Harness/Claude-session capabilities.
 tools:
@@ -475,4 +475,18 @@ tools:
     relevant_lifecycle_stages: [research, content, evaluation]
     last_reviewed: "2026-11-28"
     security_status: "All deps from PyPI (yt-dlp, faster-whisper, scenedetect, opencv-python-headless, google-genai, nvidia-cublas-cu12, nvidia-cudnn-cu12) in an isolated uv venv. Gemini key read from the GEMINI_API_KEY user env var only, never stored in files; uploaded video is deleted from Gemini after analysis."
-    decision: "Built and verified 2026-11-28: mPFRrq_ezp0 (8m51s) transcribed on CUDA, 47 scenes, 40 keyframes, Gemini analysis OK; reels DgOhKCftUY1 and YouTube 5HDa5HCb0pc also verified. Known limits: Chrome/Edge cookies cannot be decrypted on Windows (app-bound encryption), use Firefox login for private/age-restricted Reels; Gemini 3.8 flash returns 503 under load, tool retries then falls back to gemini-2.5-flash; no speaker diarization."
+    decision: "Built and verified 2026-11-28: mPFRrq_ezp0 (8m51s) transcribed on CUDA, 47 scenes, 40 keyframes, Gemini analysis OK; reels DgOhKCftUY1 and YouTube 5HDa5HCb0pc also verified. Known limits: Chrome/Edge cookies cannot be decrypted on Windows (app-bound encryption), use Firefox login for private/age-restricted Reels; Gemini 3.8 flash returns 503 under load, tool retries then falls back to gemini-3.7-flash / 3.5-flash (2.5-flash is closed to new keys); no speaker diarization."
+
+  - id: hyperframes
+    name: HyperFrames (HeyGen) + explainer engine
+    description: "HTML-composition video renderer (paused GSAP timeline seeked frame by frame in headless Chrome, encoded with FFmpeg). Used as the render core of harness/video-generation/engine/explainer.py: spec JSON -> Kokoro narration -> HyperFrames composition -> MP4."
+    category: CLI tool (npx, pinned hyperframes@0.9.104)
+    primary_domain: VIDEO
+    secondary_domains: [CONTENT]
+    source: https://github.com/heygen-com/hyperframes
+    installation_status: installed
+    compatible: true
+    relevant_lifecycle_stages: [content]
+    last_reviewed: "2026-11-28"
+    security_status: "Apache-2.0, run via npx with a pinned version, no install scripts run globally. CLI sends usage telemetry. Its agent skills (npx skills add heygen-com/hyperframes) not installed: the auto-mode classifier blocked a global skills install; owner can run it."
+    decision: "Adopted as the render core for diagram explainers 2026-11-28 after a Windows spike: renders natively (no WSL), 35.6s 1080x1920 in ~32s on the RTX 3050 laptop, lint/check gates usable (--strict). Remotion stays the core for the Lynceon launch videos already built on it; HyperFrames is for new HTML/GSAP explainer work. Gotcha: launch render with a relative -o path and captured output from Python, an absolute path with spaces made it exit 1."

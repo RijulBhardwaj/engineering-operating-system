@@ -1,8 +1,10 @@
-# Video Generation Toolkit
+﻿# Video Generation Toolkit
 
 A generic, project-agnostic pipeline for making explainer/diagram videos: concept -> script -> math/code diagrams -> narration -> composed video -> SFX -> render -> rollout. Any project or session can spin up its own independent workspace with `setup.sh`; this folder is the toolkit's home, not a specific video's home. **CAT_Guide** (`video/` subfolder) is the first consumer, not where the toolkit lives.
 
 See also: [animation-styles.md](animation-styles.md) (which tool renders which named animation style), [brand-assets-template/](brand-assets-template/) (per-project colors/fonts/logo seed, copied in by `setup.sh`), [script-template.md](script-template.md) (stage 2 script structure + feedback loop), and [metrics.md](metrics.md) (per-run ledger + quality indicators to monitor).
+
+**Explainer engine (2026-11-28):** [engine/](engine/README.md) turns a spec JSON into a narrated vertical diagram explainer (Kokoro voice + HyperFrames render), verified on Windows. Reference-video findings and style rules: `docs/research_notes/video-references/PLAYBOOK.md`; watch any video with `video-watch`.
 
 ## Pipeline stages
 
