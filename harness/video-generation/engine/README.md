@@ -33,7 +33,11 @@ Review fixes 2026-11-28 (independent opus review, no high findings): `validate` 
 digits, `-` only), non-`#rrggbb` colours, non-numeric fields, empty/out-of-range charts, blank narration and missing
 keys before TTS runs; titles/captions are escaped for inline script; an element already on screen is not popped in
 again and a same-beat pulse waits for its pop-in; counters centre through GSAP; render has a 30 min timeout and a
-safe output-name check. Tests: `python -m pytest test_explainer.py` (16 pass). Both demos re-rendered and frame-checked.
+safe output-name check. A second review round added: finite-number and range checks (speed > 0, hold >= 0, chart
+max/decimals), text-type checks for labels/titles/captions, shape checks for edges/draw/id lists, a caught render
+timeout, and message-specific tests. Not checked: whether a pulse/draw targets something currently visible (it still
+renders, just without a visible effect). Tests: `python -m pytest test_explainer.py` (27 pass). Both demos
+re-rendered and frame-checked.
 
 Known limits: math labels are plain Unicode, not LaTeX; no images, line charts or camera moves yet.
 HyperFrames' own agent skills are not installed (needs `npx skills add heygen-com/hyperframes`, run by the owner);

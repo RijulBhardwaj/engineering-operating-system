@@ -25,6 +25,7 @@ Each beat lasts as long as its narration (+ gap/hold); its visual actions start 
 import argparse
 import html
 import json
+import math
 import re
 import shutil
 import subprocess
@@ -131,7 +132,7 @@ def build_html(spec, timing, total, w, h):
         for i, (a, bb) in enumerate(b.get("draw", [])):
             js.append(f'draw("#e-{a}__{bb}", {t + 0.2 * i:.2f});')
         for nid in b.get("pulse", []):
-            pt = t + 0.15 * len(shown) + 0.45 if nid in shown else t  # pulse after its own pop-in finishes
+            pt = t + 0.15 * shown.index(nid) + 0.45 if nid in shown else t  # pulse right after its own pop-in
             js.append(f'tl.to("{sel[nid]}", {{scale: 1.18, duration: 0.25, yoyo: true, repeat: 1, '
                       f'ease: "power2.inOut"}}, {pt:.2f});')
         for kid in b.get("count", []):
@@ -235,10 +236,28 @@ def validate(spec):
             if k not in obj:
                 fail(f"{what} {obj.get('id', '')!r} is missing {k!r}")
 
-    def num(obj, key, what, default=None):
+    def num(obj, key, what, default=None, lo=None):
         v = obj.get(key, default)
-        if isinstance(v, bool) or not isinstance(v, (int, float)):
-            fail(f"{what} {obj.get('id', '')!r}: {key!r} must be a number, got {v!r}")
+        if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
+            fail(f"{what} {obj.get('id', '')!r}: {key!r} must be a finite number, got {v!r}")
+        if lo is not None and v < lo:
+            fail(f"{what} {obj.get('id', '')!r}: {key!r} must be >= {lo}, got {v!r}")
+        return v
+
+    def decimals(obj, what):
+        d = obj.get("decimals", 0)
+        if isinstance(d, bool) or not isinstance(d, int) or not 0 <= d <= 4:
+            fail(f"{what} {obj['id']!r}: decimals must be an integer 0-4")
+
+    def pair(e, what):
+        if not (isinstance(e, list) and len(e) == 2 and all(isinstance(x, str) for x in e)):
+            fail(f"{what} {e!r} must be a pair of node ids")
+        return e
+
+    def id_list(b, key):
+        v = b.get(key, [])
+        if not (isinstance(v, list) and all(isinstance(x, str) for x in v)):
+            fail(f"beat {b['say'][:40]!r}: {key!r} must be a list of ids")
         return v
 
     def colour(v, what):
@@ -249,19 +268,23 @@ def validate(spec):
         colour(v, f"palette.{k}")
     if spec.get("resolution", "portrait") not in SIZES:
         fail(f"resolution must be one of {sorted(SIZES)}")
-    num(spec, "speed", "spec", 1.2)
+    if num(spec, "speed", "spec", 1.2) <= 0:
+        fail("speed must be > 0")
     nodes, counters, charts = set(), set(), set()
     for group, bucket, keys in (("nodes", nodes, ("id", "label", "x", "y")),
                                 ("counters", counters, ("id", "x", "y", "to")),
                                 ("charts", charts, ("id", "x", "y", "w", "h", "bars"))):
         for el in spec.get(group, []):
             need(el, keys, group[:-1])
-            if not ID.match(str(el["id"])):
+            if not isinstance(el["id"], str) or not ID.match(el["id"]):
                 fail(f"id {el['id']!r} may only use letters, digits and '-'")
             for k in keys[1:]:
                 if k not in ("label", "bars"):
                     num(el, k, group[:-1])
             colour(el.get("color"), f"{group[:-1]} {el['id']}")
+            for k in ("label", "prefix", "suffix"):
+                if k in el and not isinstance(el[k], str):
+                    fail(f"{group[:-1]} {el['id']!r}: {k!r} must be text")
             bucket.add(el["id"])
     if len(nodes | counters | charts) != len(nodes) + len(counters) + len(charts) or \
             len(nodes) != len(spec.get("nodes", [])) or len(counters) != len(spec.get("counters", [])) or \
@@ -271,32 +294,39 @@ def validate(spec):
     for k in spec.get("counters", []):
         num(k, "from", "counter", 0)
         num(k, "size", "counter", 0.16)
-        if not isinstance(k.get("decimals", 0), int) or not 0 <= k.get("decimals", 0) <= 4:
-            fail(f"counter {k['id']!r}: decimals must be an integer 0-4")
+        decimals(k, "counter")
     for ch in spec.get("charts", []):
-        if not ch["bars"]:
+        if not isinstance(ch["bars"], list) or not ch["bars"]:
             fail(f"chart {ch['id']!r} has no bars")
+        decimals(ch, "chart")
         for bar in ch["bars"]:
             need(bar, ("label", "value"), f"bar of chart {ch['id']}")
             num(bar, "value", f"bar of chart {ch['id']}")
+            if not isinstance(bar["label"], str):
+                fail(f"bar of chart {ch['id']!r}: label must be text")
             colour(bar.get("color"), f"bar of chart {ch['id']}")
-        top = ch.get("max") or max(bar["value"] for bar in ch["bars"])
+        top = num(ch, "max", "chart") if "max" in ch else max(bar["value"] for bar in ch["bars"])
         if top <= 0 or any(not 0 <= bar["value"] <= top for bar in ch["bars"]):
             fail(f"chart {ch['id']!r}: need max > 0 and every value within 0..max")
-    edges = [list(e) for e in spec.get("edges", [])]
+    edges = [pair(e, "edge") for e in spec.get("edges", [])]
     for e in edges:
-        if len(e) != 2 or set(e) - nodes:
+        if set(e) - nodes:
             fail(f"edge {e} must name two known nodes")
-    if not spec.get("beats"):
+    if not isinstance(spec.get("beats"), list) or not spec["beats"]:
         fail("no beats")
     for b in spec["beats"]:
-        if not isinstance(b.get("say"), str) or not b["say"].strip():
+        if not isinstance(b, dict) or not isinstance(b.get("say"), str) or not b["say"].strip():
             fail(f"every beat needs non-empty 'say' text (beat {b!r:.60})")
-        num(b, "hold", "beat", 0)
-        bad = (set(b.get("show", [])) | set(b.get("pulse", [])) | set(b.get("hide", []))) - ids
-        bad |= set(b.get("count", [])) - counters
-        bad |= set(b.get("grow", [])) - charts
-        bad |= {f"{x}->{y}" for x, y in b.get("draw", []) if [x, y] not in edges}
+        for k in ("title", "caption"):
+            if k in b and not isinstance(b[k], str):
+                fail(f"beat {b['say'][:40]!r}: {k!r} must be text")
+        num(b, "hold", "beat", 0, lo=0)
+        bad = (set(id_list(b, "show")) | set(id_list(b, "pulse")) | set(id_list(b, "hide"))) - ids
+        bad |= set(id_list(b, "count")) - counters
+        bad |= set(id_list(b, "grow")) - charts
+        if not isinstance(b.get("draw", []), list):
+            fail(f"beat {b['say'][:40]!r}: 'draw' must be a list of node pairs")
+        bad |= {f"{x}->{y}" for x, y in (pair(d, "draw") for d in b.get("draw", [])) if [x, y] not in edges}
         if bad:
             fail(f"beat {b['say'][:40]!r}: unknown {sorted(bad)}")
 
@@ -309,8 +339,8 @@ def main():
     a = ap.parse_args()
     spec = json.loads(Path(a.spec).read_text(encoding="utf-8"))
     validate(spec)
-    out = Path(a.out) if a.out else HERE / "renders" / Path(a.spec).stem
-    if not SAFE_NAME.match(out.name):
+    out = (Path(a.out) if a.out else HERE / "renders" / Path(a.spec).stem).resolve()
+    if not SAFE_NAME.match(out.name) or not out.name.strip("."):
         sys.exit(f"output name {out.name!r} may only use letters, digits, '_', '.', '-'")
     out.mkdir(parents=True, exist_ok=True)
     w, h = SIZES[spec.get("resolution", "portrait")]
@@ -326,8 +356,13 @@ def main():
     mp4 = out / f"{out.name}.mp4"
     print("[engine] rendering (HyperFrames)", file=sys.stderr)
     # relative -o + captured output: an absolute path with spaces / inherited console made the CLI exit 1 on Windows
-    r = subprocess.run([shutil.which("npx") or "npx", "-y", HF, "render", "-o", mp4.name, "-q", "delivery", "--strict"],
-                       cwd=out, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800)
+    try:
+        r = subprocess.run([shutil.which("npx") or "npx", "-y", HF, "render", "-o", mp4.name, "-q", "delivery",
+                            "--strict"], cwd=out, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           timeout=1800)
+    except subprocess.TimeoutExpired as e:
+        tail = (e.stdout or b"")[-2000:] if isinstance(e.stdout, bytes) else (e.stdout or "")[-2000:]
+        sys.exit(f"render timed out after 30 min:\n{tail}")
     if r.returncode or not mp4.exists():
         sys.exit(f"render failed ({r.returncode}):\n{r.stdout[-2000:]}\n{r.stderr[-2000:]}")
     print(mp4)
