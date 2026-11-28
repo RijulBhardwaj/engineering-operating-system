@@ -1,7 +1,7 @@
 {
   "title": "Trig hexagon demo",
   "voice": "bf_emma",
-  "speed": 0.95,
+  "speed": 1.15,
   "resolution": "portrait",
   "nodes": [
     {"id": "sin", "label": "sin θ", "x": 0.37, "y": 0.29, "color": "#34d399"},

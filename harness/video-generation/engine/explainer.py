@@ -8,14 +8,18 @@ Usage:
 Run with the Kokoro venv's python (CAT_Guide/video/tts-venv) -- it needs kokoro, numpy, soundfile.
 
 Spec shape (see examples/trig-hexagon.json):
-  {"title": str, "voice": "bf_emma", "speed": 0.95, "resolution": "portrait",
+  {"title": str, "voice": "bf_emma", "speed": 1.2, "resolution": "portrait",
    "palette": {"bg": "#05080f", "title": "#f5c542", "caption": "#4fd1e8", "line": "#5b6b8c"},
-   "nodes": [{"id": "sin", "label": "sin Î¸", "x": 0.37, "y": 0.24, "color": "#34d399"}],   # x,y = fraction of frame
+   "nodes": [{"id": "sin", "label": "sin θ", "x": 0.37, "y": 0.24, "color": "#34d399"}],   # x,y = fraction of frame
    "edges": [["sin", "cos"]],
+   "counters": [{"id": "n", "x": 0.5, "y": 0.3, "to": 27, "from": 0, "prefix": "", "suffix": "",
+                 "label": "identities", "color": "#f5c542", "size": 0.16}],               # x,y = centre
+   "charts": [{"id": "c", "x": 0.1, "y": 0.3, "w": 0.8, "h": 0.32, "max": 20, "decimals": 1,
+               "bars": [{"label": "A", "value": 12, "color": "#60a5fa"}]}],              # x,y = top-left
    "beats": [{"say": "narration line",
               "title": "optional new title", "caption": "optional caption",
-              "show": ["node ids to pop in"], "draw": [["a", "b"]], "pulse": ["ids"],
-              "hide": ["ids"], "hold": 0.3}]}
+              "show": ["node/counter/chart ids to pop in"], "draw": [["a", "b"]], "pulse": ["ids"],
+              "hide": ["ids"], "count": ["counter ids"], "grow": ["chart ids"], "hold": 0.3}]}
 Each beat lasts as long as its narration (+ gap/hold); its visual actions start LEAD_VISUAL before it.
 """
 import argparse
@@ -43,7 +47,7 @@ def tts(spec, out):
     parts, t, timing = [np.zeros(int(LEAD * SR), np.float32)], LEAD, []
     for b in spec["beats"]:
         audio = np.concatenate([np.asarray(a, np.float32)
-                                for _, _, a in pipe(b["say"], voice=voice, speed=spec.get("speed", 0.95))])
+                                for _, _, a in pipe(b["say"], voice=voice, speed=spec.get("speed", 1.2))])
         d = len(audio) / SR
         timing.append({"start": round(t, 3), "dur": round(d, 3)})
         gap = GAP + b.get("hold", 0)
@@ -56,6 +60,7 @@ def tts(spec, out):
 
 def build_html(spec, timing, total, w, h):
     p = {"bg": "#05080f", "title": "#f5c542", "caption": "#4fd1e8", "line": "#5b6b8c", **spec.get("palette", {})}
+    spec.setdefault("nodes", [])  # nodes are optional: a chart- or counter-only video is valid
     nodes = {n["id"]: n for n in spec["nodes"]}
     r = int(min(w, h) * 0.075)  # node radius
     edges_svg, nodes_html = [], []
@@ -70,23 +75,59 @@ def build_html(spec, timing, total, w, h):
             f'width:{2 * r}px;height:{2 * r}px;border-color:{c};color:{c};box-shadow:0 0 28px {c}55">'
             f'{html.escape(n["label"])}</div>')
 
+    sel = {n["id"]: f"#n-{n['id']}" for n in spec["nodes"]}
+    extra_html = []
+    for k in spec.get("counters", []):
+        sel[k["id"]] = f"#k-{k['id']}"
+        c, fs = k.get("color", p["title"]), k.get("size", 0.16) * w
+        extra_html.append(
+            f'<div id="k-{k["id"]}" class="counter" style="left:{k["x"] * w:.0f}px;top:{k["y"] * h:.0f}px;color:{c}">'
+            f'<div style="font-size:{fs:.0f}px">{html.escape(k.get("prefix", ""))}'
+            f'<span class="num" data-d="{k.get("decimals", 0)}">{k.get("from", 0)}</span>'
+            f'{html.escape(k.get("suffix", ""))}</div>'
+            f'<div class="lbl" style="font-size:{fs * 0.28:.0f}px">{html.escape(k.get("label", ""))}</div></div>')
+    for ch in spec.get("charts", []):
+        sel[ch["id"]] = f"#c-{ch['id']}"
+        top = ch.get("max") or max(b["value"] for b in ch["bars"])
+        cols = "".join(
+            f'<div class="col"><div class="val num" data-d="{ch.get("decimals", 0)}">0</div>'
+            f'<div class="bar" style="height:{100 * b["value"] / top:.1f}%;background:{b.get("color", p["caption"])}"></div>'
+            f'<div class="blbl">{html.escape(b["label"])}</div></div>' for b in ch["bars"])
+        extra_html.append(
+            f'<div id="c-{ch["id"]}" class="chart" style="left:{ch["x"] * w:.0f}px;top:{ch["y"] * h:.0f}px;'
+            f'width:{ch["w"] * w:.0f}px;height:{ch["h"] * h:.0f}px">{cols}</div>')
+    charts = {ch["id"]: ch for ch in spec.get("charts", [])}
+    counters = {k["id"]: k for k in spec.get("counters", [])}
+
     js = []
-    for b, tm in zip(spec["beats"], timing):
+    for b, tm in zip(spec["beats"], timing, strict=True):
         t = max(0.0, tm["start"] - LEAD_VISUAL)
         if "title" in b:
             js.append(f'swap("#title", {json.dumps(b["title"])}, {t:.2f});')
         if "caption" in b:
             js.append(f'swap("#caption", {json.dumps(b["caption"])}, {t:.2f});')
-        for i, nid in enumerate(b.get("show", [])):
-            js.append(f'tl.fromTo("#n-{nid}", {{scale: 0, opacity: 0}}, '
+        # count/grow imply show, so a counter or chart can appear and animate in one beat
+        shown = list(dict.fromkeys(b.get("show", []) + b.get("count", []) + b.get("grow", [])))
+        for i, nid in enumerate(shown):
+            js.append(f'tl.fromTo("{sel[nid]}", {{scale: 0, opacity: 0}}, '
                       f'{{scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.8)"}}, {t + 0.15 * i:.2f});')
         for i, (a, bb) in enumerate(b.get("draw", [])):
             js.append(f'draw("#e-{a}-{bb}", {t + 0.2 * i:.2f});')
         for nid in b.get("pulse", []):
-            js.append(f'tl.to("#n-{nid}", {{scale: 1.18, duration: 0.25, yoyo: true, repeat: 1, '
+            js.append(f'tl.to("{sel[nid]}", {{scale: 1.18, duration: 0.25, yoyo: true, repeat: 1, '
                       f'ease: "power2.inOut"}}, {t:.2f});')
         for nid in b.get("hide", []):
-            js.append(f'tl.to("#n-{nid}", {{opacity: 0.15, duration: 0.3}}, {t:.2f});')
+            # nodes dim (diagram context stays readable); counters/charts clear the stage fully
+            js.append(f'tl.to("{sel[nid]}", {{opacity: {0.15 if nid in nodes else 0}, duration: 0.3}}, {t:.2f});')
+        for kid in b.get("count", []):
+            k = counters[kid]
+            js.append(f'count("#k-{kid} .num", {k.get("from", 0)}, {k["to"]}, 1.4, {t + 0.2:.2f});')
+        for cid in b.get("grow", []):
+            for i, bar in enumerate(charts[cid]["bars"]):
+                bt = t + 0.3 + 0.18 * i
+                js.append(f'tl.fromTo("#c-{cid} .col:nth-child({i + 1}) .bar", {{scaleY: 0}}, '
+                          f'{{scaleY: 1, duration: 0.7, ease: "power3.out"}}, {bt:.2f});')
+                js.append(f'count("#c-{cid} .col:nth-child({i + 1}) .val", 0, {bar["value"]}, 0.7, {bt:.2f});')
     actions = "\n  ".join(js)
 
     # Title sits just below the 250px top safe zone, caption above the 380px bottom safe zone (9:16).
@@ -109,12 +150,27 @@ def build_html(spec, timing, total, w, h):
   .node {{ position: absolute; border: 4px solid; border-radius: 50%; background: #0c1220;
           display: flex; align-items: center; justify-content: center; font-size: {r * 0.42:.0f}px;
           font-style: italic; opacity: 0; transform: scale(0); }}
+  .counter {{ position: absolute; translate: -50% -50%; text-align: center; font-weight: 700;
+             font-variant-numeric: lining-nums tabular-nums; opacity: 0; transform: scale(0); }}
+  /* the headless-Chrome serif fallback draws old-style digits even with lining-nums: numbers get a sans face */
+  .num {{ font-family: "Segoe UI", Arial, sans-serif; }}
+  .counter .lbl {{ color: {p['caption']}; font-weight: 400; letter-spacing: 0.04em; }}
+  .chart {{ position: absolute; display: flex; align-items: flex-end; gap: 4%; opacity: 0; transform: scale(0);
+           border-bottom: 3px solid {p['line']}; }}
+  .col {{ flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+         position: relative; }}
+  .bar {{ width: 100%; border-radius: 10px 10px 0 0; transform-origin: bottom; transform: scaleY(0); }}
+  .val {{ color: #ffffff; font-size: {w * 0.045:.0f}px; font-weight: 700; margin-bottom: 10px;
+         font-variant-numeric: lining-nums tabular-nums; }}
+  .blbl {{ position: absolute; bottom: -{w * 0.06:.0f}px; color: {p['caption']}; font-size: {w * 0.03:.0f}px;
+          font-weight: 700; white-space: nowrap; }}
 </style>
 </head>
 <body>
 <div id="root" data-composition-id="main" data-start="0" data-duration="{total}" data-width="{w}" data-height="{h}">
   <svg id="diagram" class="clip" data-start="0" data-duration="{total}" data-track-index="0" width="{w}" height="{h}">{''.join(edges_svg)}</svg>
   {''.join(nodes_html)}
+  {''.join(extra_html)}
   <h1 id="title"></h1>
   <p id="caption"></p>
   <audio id="narration" class="clip" data-start="0" data-duration="{total}" data-track-index="1" src="narration.wav"></audio>
@@ -133,6 +189,14 @@ def build_html(spec, timing, total, w, h):
     tl.set(sel, {{ textContent: text }}, t);
     tl.fromTo(sel, {{ opacity: 0, y: 14 }}, {{ opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }}, t);
   }}
+  // number count-up: modifiers format during render, so it stays correct under seek (no onUpdate callbacks)
+  function count(sel, from, to, dur, t) {{
+    document.querySelectorAll(sel).forEach(el => {{
+      const d = +el.dataset.d || 0;
+      tl.fromTo(el, {{ innerText: from }}, {{ innerText: to, duration: dur, ease: "power2.out",
+        modifiers: {{ innerText: v => (+v).toFixed(d) }} }}, t);
+    }});
+  }}
   {actions}
   window.__timelines["main"] = tl;
   tl.seek(0);
@@ -144,13 +208,20 @@ def build_html(spec, timing, total, w, h):
 
 def validate(spec):
     """Fail early on typos instead of rendering a silently missing animation."""
-    ids = {n["id"] for n in spec["nodes"]}
+    nodes = {n["id"] for n in spec.get("nodes", [])}
+    counters = {k["id"] for k in spec.get("counters", [])}
+    charts = {c["id"] for c in spec.get("charts", [])}
+    ids = nodes | counters | charts
+    if len(ids) != len(nodes) + len(counters) + len(charts):
+        sys.exit("spec error: node/counter/chart ids must be unique across all three")
     edges = [list(e) for e in spec.get("edges", [])]
     for e in edges:
-        if set(e) - ids:
+        if set(e) - nodes:
             sys.exit(f"spec error: edge {e} names an unknown node")
     for b in spec["beats"]:
         bad = (set(b.get("show", [])) | set(b.get("pulse", [])) | set(b.get("hide", []))) - ids
+        bad |= set(b.get("count", [])) - counters
+        bad |= set(b.get("grow", [])) - charts
         bad |= {f"{x}-{y}" for x, y in b.get("draw", []) if [x, y] not in edges}
         if bad:
             sys.exit(f"spec error in beat {b['say'][:40]!r}: unknown {sorted(bad)}")

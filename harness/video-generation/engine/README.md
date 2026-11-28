@@ -20,7 +20,15 @@ Verified 2026-11-28 on Windows (RTX 3050 6GB): `examples/trig-hexagon.json` -> 3
 video-watch transcript matched all 8 beats; Gemini read it as one calm British female voice, no music, single
 continuous 9:16 frame, titles and captions in sync.
 
-Known limits: Kokoro reads slightly slow (~115 WPM measured vs the playbook's ~150; raise `speed`); math labels are
-plain Unicode, not LaTeX; only the node/edge diagram primitive exists so far (no charts, counters, images).
+Elements: `nodes` + `edges` (diagram), `counters` (big number that counts up, optional decimals/prefix/suffix/label),
+`charts` (bar chart, bars grow in sequence with counting values). Beat actions: `show`, `draw`, `pulse`, `hide`
+(nodes dim, counters/charts clear), `count`, `grow`, plus `title`/`caption` swaps.
+
+Round 2 verified 2026-11-28: default voice speed 1.2 (`examples/reference-pacing.json`: ~150 WPM including pauses,
+~178 while speaking); counters and bar chart checked frame by frame (values 0.6/1.5/5.3/13.1/15.0 land exactly,
+lining sans digits); hexagon demo re-rendered at speed 1.15 (31.6s, unchanged visuals). Ruff and Bandit clean
+apart from long HTML template lines and the expected low-severity subprocess notes.
+
+Known limits: math labels are plain Unicode, not LaTeX; no images, line charts or camera moves yet.
 HyperFrames' own agent skills are not installed (needs `npx skills add heygen-com/hyperframes`, run by the owner);
 the engine only needs the CLI. HyperFrames sends usage telemetry from the CLI.
