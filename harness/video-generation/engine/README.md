@@ -38,7 +38,10 @@ max/decimals), text-type checks for labels/titles/captions, shape checks for edg
 timeout, and message-specific tests. Not checked: whether a pulse/draw targets something currently visible (it still
 renders, just without a visible effect). A third round: exact-match id/colour/name patterns (no trailing newline),
 every `<` escaped in inline-script strings, the whole render process tree killed on timeout, type checks for voice,
-palette and list/object shapes. Tests: `python -m pytest test_explainer.py` (33 pass). Both demos re-rendered and
+palette and list/object shapes. A fourth round: stale MP4 deleted before each render, bounded wait after a timeout
+kill, duplicate/self-loop edges rejected, hide/re-show tests. Accepted for now: GSAP loads from jsDelivr (pinned
+3.15.0, no SRI), so renders need network; timeout tree-kill is Windows-specific. Tests:
+`python -m pytest test_explainer.py` (38 pass). Both demos re-rendered and
 frame-checked after each round.
 
 Known limits: math labels are plain Unicode, not LaTeX; no images, line charts or camera moves yet.

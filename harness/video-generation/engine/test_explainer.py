@@ -46,12 +46,37 @@ def test_examples_validate(example):
     (lambda s: s["beats"][2].update(grow=["videos"]), "unknown"),
     (lambda s: s["beats"][2].update(show="pace"), "must be a list of ids"),
     (lambda s: s["beats"][2].update(draw=[["a", ["b"]]]), "must be a pair of node ids"),
+    (lambda s: s["charts"][0]["bars"].append("x"), "every bar must be an object"),
 ])
 def test_bad_specs_rejected(mutate, message):
     spec = copy.deepcopy(BASE)
     mutate(spec)
     with pytest.raises(SystemExit, match=message):
         e.validate(spec)
+
+
+NODES = [{"id": "a", "label": "A", "x": 0.3, "y": 0.5}, {"id": "b", "label": "B", "x": 0.7, "y": 0.5}]
+
+
+@pytest.mark.parametrize("edges,draw,message", [
+    ([["a", "b"], ["a", "b"]], [], "listed twice"),
+    ([["a", "a"]], [], "two different known nodes"),
+    ([["a", "b"]], [["b", "a"]], "unknown"),  # draw must match the declared edge direction
+])
+def test_bad_edges_rejected(edges, draw, message):
+    spec = {"nodes": NODES, "edges": edges, "beats": [{"say": "x", "draw": draw}]}
+    with pytest.raises(SystemExit, match=message):
+        e.validate(spec)
+
+
+def test_hide_dims_nodes_clears_counters_and_reshow_pops_in():
+    spec = {"nodes": NODES[:1], "counters": [{"id": "k", "x": 0.5, "y": 0.3, "to": 3}],
+            "beats": [{"say": "one", "show": ["a", "k"]}, {"say": "two", "hide": ["a", "k"]},
+                      {"say": "three", "show": ["k"]}]}
+    e.validate(spec)
+    page = e.build_html(spec, [{"start": 1.0 + 2 * i, "dur": 1} for i in range(3)], 8, 1080, 1920)
+    assert 'tl.to("#n-a", {opacity: 0.15' in page and 'tl.to("#k-k", {opacity: 0,' in page
+    assert page.count('tl.fromTo("#k-k"') == 2  # hidden counter pops in again when re-shown
 
 
 def test_script_breakout_escaped():

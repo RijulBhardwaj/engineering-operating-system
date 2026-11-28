@@ -311,6 +311,8 @@ def validate(spec):
             fail(f"chart {ch['id']!r} has no bars")
         decimals(ch, "chart")
         for bar in ch["bars"]:
+            if not isinstance(bar, dict):
+                fail(f"chart {ch['id']!r}: every bar must be an object")
             need(bar, ("label", "value"), f"bar of chart {ch['id']}")
             num(bar, "value", f"bar of chart {ch['id']}")
             if not isinstance(bar["label"], str):
@@ -320,9 +322,11 @@ def validate(spec):
         if top <= 0 or any(not 0 <= bar["value"] <= top for bar in ch["bars"]):
             fail(f"chart {ch['id']!r}: need max > 0 and every value within 0..max")
     edges = [pair(e, "edge") for e in spec.get("edges", [])]
-    for e in edges:
-        if set(e) - nodes:
-            fail(f"edge {e} must name two known nodes")
+    for i, e in enumerate(edges):
+        if set(e) - nodes or e[0] == e[1]:
+            fail(f"edge {e} must name two different known nodes")
+        if e in edges[:i]:
+            fail(f"edge {e} is listed twice")
     if not isinstance(spec.get("beats"), list) or not spec["beats"]:
         fail("no beats")
     for b in spec["beats"]:
@@ -365,6 +369,7 @@ def main():
     if a.no_render:
         return
     mp4 = out / f"{out.name}.mp4"
+    mp4.unlink(missing_ok=True)  # an old render must never be reported as this run's result
     print("[engine] rendering (HyperFrames)", file=sys.stderr)
     # relative -o + captured output: an absolute path with spaces / inherited console made the CLI exit 1 on Windows
     p = subprocess.Popen([shutil.which("npx") or "npx", "-y", HF, "render", "-o", mp4.name, "-q", "delivery",
@@ -378,7 +383,10 @@ def main():
             subprocess.run(["taskkill", "/T", "/F", "/PID", str(p.pid)], capture_output=True)
         else:
             p.kill()
-        stdout, stderr = p.communicate()
+        try:
+            stdout, stderr = p.communicate(timeout=30)
+        except subprocess.TimeoutExpired:  # a surviving grandchild still holds the pipes
+            stdout, stderr = "", ""
         sys.exit(f"render timed out after 30 min:\n{stdout[-2000:]}\n{stderr[-2000:]}")
     if p.returncode or not mp4.exists():
         sys.exit(f"render failed ({p.returncode}):\n{stdout[-2000:]}\n{stderr[-2000:]}")
