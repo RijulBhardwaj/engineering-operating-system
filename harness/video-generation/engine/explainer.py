@@ -1,4 +1,4 @@
-﻿"""Explainer-reel engine: spec JSON -> narrated, animated diagram video (HyperFrames + Kokoro).
+"""Explainer-reel engine: spec JSON -> narrated, animated diagram video (HyperFrames + Kokoro).
 
 Style source: reference reel DgOhKCftUY1 (one continuous dark canvas, colour-coded nodes, yellow title
 zone, caption zone, calm British narration, no music). Rules: docs/research_notes/video-references/PLAYBOOK.md.
@@ -25,6 +25,7 @@ Each beat lasts as long as its narration (+ gap/hold); its visual actions start 
 import argparse
 import html
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -36,6 +37,9 @@ GAP, LEAD, TAIL = 0.35, 0.6, 1.8
 LEAD_VISUAL = 0.2  # playbook: visuals land ~200ms before the spoken word
 SIZES = {"portrait": (1080, 1920), "landscape": (1920, 1080), "square": (1080, 1080)}
 HF = "hyperframes@0.9.104"  # pinned: the version verified rendering on Windows 2026-11-28
+ID = re.compile(r"^[A-Za-z0-9-]+$")  # edge ids join two node ids with "__", so no "_" in ids
+COLOUR = re.compile(r"^#[0-9a-fA-F]{6}$")  # glow appends a 2-digit alpha, so only #rrggbb works
+SAFE_NAME = re.compile(r"^[\w.-]+$")  # output name is passed through npx.cmd, i.e. parsed by cmd.exe
 
 
 def tts(spec, out):
@@ -48,6 +52,8 @@ def tts(spec, out):
     for b in spec["beats"]:
         audio = np.concatenate([np.asarray(a, np.float32)
                                 for _, _, a in pipe(b["say"], voice=voice, speed=spec.get("speed", 1.2))])
+        if not len(audio):
+            sys.exit(f"Kokoro produced no audio for beat {b['say'][:40]!r}")
         d = len(audio) / SR
         timing.append({"start": round(t, 3), "dur": round(d, 3)})
         gap = GAP + b.get("hold", 0)
@@ -58,6 +64,11 @@ def tts(spec, out):
     return timing, round(t + TAIL, 3)
 
 
+def js_str(s):
+    """JSON string safe inside an inline <script> (a '</script>' in a caption must not end the block)."""
+    return json.dumps(s).replace("</", "<\\/")
+
+
 def build_html(spec, timing, total, w, h):
     p = {"bg": "#05080f", "title": "#f5c542", "caption": "#4fd1e8", "line": "#5b6b8c", **spec.get("palette", {})}
     spec.setdefault("nodes", [])  # nodes are optional: a chart- or counter-only video is valid
@@ -66,7 +77,7 @@ def build_html(spec, timing, total, w, h):
     edges_svg, nodes_html = [], []
     for a, b in spec.get("edges", []):
         A, B = nodes[a], nodes[b]
-        edges_svg.append(f'<line id="e-{a}-{b}" class="edge" x1="{A["x"] * w:.0f}" y1="{A["y"] * h:.0f}" '
+        edges_svg.append(f'<line id="e-{a}__{b}" class="edge" x1="{A["x"] * w:.0f}" y1="{A["y"] * h:.0f}" '
                          f'x2="{B["x"] * w:.0f}" y2="{B["y"] * h:.0f}"/>')
     for n in spec["nodes"]:
         c = n.get("color", "#ffffff")
@@ -99,26 +110,30 @@ def build_html(spec, timing, total, w, h):
     charts = {ch["id"]: ch for ch in spec.get("charts", [])}
     counters = {k["id"]: k for k in spec.get("counters", [])}
 
-    js = []
+    js, visible = [], set()
     for b, tm in zip(spec["beats"], timing, strict=True):
         t = max(0.0, tm["start"] - LEAD_VISUAL)
         if "title" in b:
-            js.append(f'swap("#title", {json.dumps(b["title"])}, {t:.2f});')
+            js.append(f'swap("#title", {js_str(b["title"])}, {t:.2f});')
         if "caption" in b:
-            js.append(f'swap("#caption", {json.dumps(b["caption"])}, {t:.2f});')
-        # count/grow imply show, so a counter or chart can appear and animate in one beat
-        shown = list(dict.fromkeys(b.get("show", []) + b.get("count", []) + b.get("grow", [])))
-        for i, nid in enumerate(shown):
-            js.append(f'tl.fromTo("{sel[nid]}", {{scale: 0, opacity: 0}}, '
-                      f'{{scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.8)"}}, {t + 0.15 * i:.2f});')
-        for i, (a, bb) in enumerate(b.get("draw", [])):
-            js.append(f'draw("#e-{a}-{bb}", {t + 0.2 * i:.2f});')
-        for nid in b.get("pulse", []):
-            js.append(f'tl.to("{sel[nid]}", {{scale: 1.18, duration: 0.25, yoyo: true, repeat: 1, '
-                      f'ease: "power2.inOut"}}, {t:.2f});')
+            js.append(f'swap("#caption", {js_str(b["caption"])}, {t:.2f});')
         for nid in b.get("hide", []):
             # nodes dim (diagram context stays readable); counters/charts clear the stage fully
             js.append(f'tl.to("{sel[nid]}", {{opacity: {0.15 if nid in nodes else 0}, duration: 0.3}}, {t:.2f});')
+            visible.discard(nid)
+        # count/grow imply show; an element already on screen is not popped in again
+        shown = [i for i in dict.fromkeys(b.get("show", []) + b.get("count", []) + b.get("grow", []))
+                 if i not in visible]
+        for i, nid in enumerate(shown):
+            js.append(f'tl.fromTo("{sel[nid]}", {{scale: 0, opacity: 0}}, '
+                      f'{{scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.8)"}}, {t + 0.15 * i:.2f});')
+        visible.update(shown)
+        for i, (a, bb) in enumerate(b.get("draw", [])):
+            js.append(f'draw("#e-{a}__{bb}", {t + 0.2 * i:.2f});')
+        for nid in b.get("pulse", []):
+            pt = t + 0.15 * len(shown) + 0.45 if nid in shown else t  # pulse after its own pop-in finishes
+            js.append(f'tl.to("{sel[nid]}", {{scale: 1.18, duration: 0.25, yoyo: true, repeat: 1, '
+                      f'ease: "power2.inOut"}}, {pt:.2f});')
         for kid in b.get("count", []):
             k = counters[kid]
             js.append(f'count("#k-{kid} .num", {k.get("from", 0)}, {k["to"]}, 1.4, {t + 0.2:.2f});')
@@ -150,7 +165,7 @@ def build_html(spec, timing, total, w, h):
   .node {{ position: absolute; border: 4px solid; border-radius: 50%; background: #0c1220;
           display: flex; align-items: center; justify-content: center; font-size: {r * 0.42:.0f}px;
           font-style: italic; opacity: 0; transform: scale(0); }}
-  .counter {{ position: absolute; translate: -50% -50%; text-align: center; font-weight: 700;
+  .counter {{ position: absolute; text-align: center; font-weight: 700;
              font-variant-numeric: lining-nums tabular-nums; opacity: 0; transform: scale(0); }}
   /* the headless-Chrome serif fallback draws old-style digits even with lining-nums: numbers get a sans face */
   .num {{ font-family: "Segoe UI", Arial, sans-serif; }}
@@ -176,7 +191,10 @@ def build_html(spec, timing, total, w, h):
   <audio id="narration" class="clip" data-start="0" data-duration="{total}" data-track-index="1" src="narration.wav"></audio>
 </div>
 <script>
+  window.__timelines = window.__timelines || {{}};  // HyperFrames provides it; plain-browser preview does not
   const tl = gsap.timeline({{ paused: true }});
+  // centre counters through GSAP's own transform so scale tweens and centring never fight
+  gsap.set(".counter", {{ xPercent: -50, yPercent: -50 }});
   // edges start undrawn; draw() animates the stroke on
   document.querySelectorAll(".edge").forEach(e => {{
     const L = Math.hypot(e.x2.baseVal.value - e.x1.baseVal.value, e.y2.baseVal.value - e.y1.baseVal.value);
@@ -207,24 +225,80 @@ def build_html(spec, timing, total, w, h):
 
 
 def validate(spec):
-    """Fail early on typos instead of rendering a silently missing animation."""
-    nodes = {n["id"] for n in spec.get("nodes", [])}
-    counters = {k["id"] for k in spec.get("counters", [])}
-    charts = {c["id"] for c in spec.get("charts", [])}
+    """Fail early, before TTS, on anything that would crash later or render a silently missing animation.
+    Ids and colours go straight into HTML/CSS/JS, so they are restricted to safe character sets here."""
+    def fail(msg):
+        sys.exit(f"spec error: {msg}")
+
+    def need(obj, keys, what):
+        for k in keys:
+            if k not in obj:
+                fail(f"{what} {obj.get('id', '')!r} is missing {k!r}")
+
+    def num(obj, key, what, default=None):
+        v = obj.get(key, default)
+        if isinstance(v, bool) or not isinstance(v, (int, float)):
+            fail(f"{what} {obj.get('id', '')!r}: {key!r} must be a number, got {v!r}")
+        return v
+
+    def colour(v, what):
+        if v is not None and not COLOUR.match(str(v)):
+            fail(f"{what}: colour {v!r} must be #rrggbb")
+
+    for k, v in spec.get("palette", {}).items():
+        colour(v, f"palette.{k}")
+    if spec.get("resolution", "portrait") not in SIZES:
+        fail(f"resolution must be one of {sorted(SIZES)}")
+    num(spec, "speed", "spec", 1.2)
+    nodes, counters, charts = set(), set(), set()
+    for group, bucket, keys in (("nodes", nodes, ("id", "label", "x", "y")),
+                                ("counters", counters, ("id", "x", "y", "to")),
+                                ("charts", charts, ("id", "x", "y", "w", "h", "bars"))):
+        for el in spec.get(group, []):
+            need(el, keys, group[:-1])
+            if not ID.match(str(el["id"])):
+                fail(f"id {el['id']!r} may only use letters, digits and '-'")
+            for k in keys[1:]:
+                if k not in ("label", "bars"):
+                    num(el, k, group[:-1])
+            colour(el.get("color"), f"{group[:-1]} {el['id']}")
+            bucket.add(el["id"])
+    if len(nodes | counters | charts) != len(nodes) + len(counters) + len(charts) or \
+            len(nodes) != len(spec.get("nodes", [])) or len(counters) != len(spec.get("counters", [])) or \
+            len(charts) != len(spec.get("charts", [])):
+        fail("node/counter/chart ids must be unique across all three")
     ids = nodes | counters | charts
-    if len(ids) != len(nodes) + len(counters) + len(charts):
-        sys.exit("spec error: node/counter/chart ids must be unique across all three")
+    for k in spec.get("counters", []):
+        num(k, "from", "counter", 0)
+        num(k, "size", "counter", 0.16)
+        if not isinstance(k.get("decimals", 0), int) or not 0 <= k.get("decimals", 0) <= 4:
+            fail(f"counter {k['id']!r}: decimals must be an integer 0-4")
+    for ch in spec.get("charts", []):
+        if not ch["bars"]:
+            fail(f"chart {ch['id']!r} has no bars")
+        for bar in ch["bars"]:
+            need(bar, ("label", "value"), f"bar of chart {ch['id']}")
+            num(bar, "value", f"bar of chart {ch['id']}")
+            colour(bar.get("color"), f"bar of chart {ch['id']}")
+        top = ch.get("max") or max(bar["value"] for bar in ch["bars"])
+        if top <= 0 or any(not 0 <= bar["value"] <= top for bar in ch["bars"]):
+            fail(f"chart {ch['id']!r}: need max > 0 and every value within 0..max")
     edges = [list(e) for e in spec.get("edges", [])]
     for e in edges:
-        if set(e) - nodes:
-            sys.exit(f"spec error: edge {e} names an unknown node")
+        if len(e) != 2 or set(e) - nodes:
+            fail(f"edge {e} must name two known nodes")
+    if not spec.get("beats"):
+        fail("no beats")
     for b in spec["beats"]:
+        if not isinstance(b.get("say"), str) or not b["say"].strip():
+            fail(f"every beat needs non-empty 'say' text (beat {b!r:.60})")
+        num(b, "hold", "beat", 0)
         bad = (set(b.get("show", [])) | set(b.get("pulse", [])) | set(b.get("hide", []))) - ids
         bad |= set(b.get("count", [])) - counters
         bad |= set(b.get("grow", [])) - charts
-        bad |= {f"{x}-{y}" for x, y in b.get("draw", []) if [x, y] not in edges}
+        bad |= {f"{x}->{y}" for x, y in b.get("draw", []) if [x, y] not in edges}
         if bad:
-            sys.exit(f"spec error in beat {b['say'][:40]!r}: unknown {sorted(bad)}")
+            fail(f"beat {b['say'][:40]!r}: unknown {sorted(bad)}")
 
 
 def main():
@@ -236,6 +310,8 @@ def main():
     spec = json.loads(Path(a.spec).read_text(encoding="utf-8"))
     validate(spec)
     out = Path(a.out) if a.out else HERE / "renders" / Path(a.spec).stem
+    if not SAFE_NAME.match(out.name):
+        sys.exit(f"output name {out.name!r} may only use letters, digits, '_', '.', '-'")
     out.mkdir(parents=True, exist_ok=True)
     w, h = SIZES[spec.get("resolution", "portrait")]
 
@@ -251,7 +327,7 @@ def main():
     print("[engine] rendering (HyperFrames)", file=sys.stderr)
     # relative -o + captured output: an absolute path with spaces / inherited console made the CLI exit 1 on Windows
     r = subprocess.run([shutil.which("npx") or "npx", "-y", HF, "render", "-o", mp4.name, "-q", "delivery", "--strict"],
-                       cwd=out, capture_output=True, text=True, encoding="utf-8", errors="replace")
+                       cwd=out, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800)
     if r.returncode or not mp4.exists():
         sys.exit(f"render failed ({r.returncode}):\n{r.stdout[-2000:]}\n{r.stderr[-2000:]}")
     print(mp4)

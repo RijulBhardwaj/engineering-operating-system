@@ -29,6 +29,12 @@ Round 2 verified 2026-11-28: default voice speed 1.2 (`examples/reference-pacing
 lining sans digits); hexagon demo re-rendered at speed 1.15 (31.6s, unchanged visuals). Ruff and Bandit clean
 apart from long HTML template lines and the expected low-severity subprocess notes.
 
+Review fixes 2026-11-28 (independent opus review, no high findings): `validate` now rejects unsafe ids (letters,
+digits, `-` only), non-`#rrggbb` colours, non-numeric fields, empty/out-of-range charts, blank narration and missing
+keys before TTS runs; titles/captions are escaped for inline script; an element already on screen is not popped in
+again and a same-beat pulse waits for its pop-in; counters centre through GSAP; render has a 30 min timeout and a
+safe output-name check. Tests: `python -m pytest test_explainer.py` (16 pass). Both demos re-rendered and frame-checked.
+
 Known limits: math labels are plain Unicode, not LaTeX; no images, line charts or camera moves yet.
 HyperFrames' own agent skills are not installed (needs `npx skills add heygen-com/hyperframes`, run by the owner);
 the engine only needs the CLI. HyperFrames sends usage telemetry from the CLI.

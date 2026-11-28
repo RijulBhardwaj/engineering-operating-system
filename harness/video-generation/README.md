@@ -1,4 +1,4 @@
-﻿# Video Generation Toolkit
+# Video Generation Toolkit
 
 A generic, project-agnostic pipeline for making explainer/diagram videos: concept -> script -> math/code diagrams -> narration -> composed video -> SFX -> render -> rollout. Any project or session can spin up its own independent workspace with `setup.sh`; this folder is the toolkit's home, not a specific video's home. **CAT_Guide** (`video/` subfolder) is the first consumer, not where the toolkit lives.
 

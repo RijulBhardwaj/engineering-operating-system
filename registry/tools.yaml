@@ -1,4 +1,4 @@
-﻿# Software libraries, CLI tools and infrastructure platforms -- distinct from Claude skills/plugins/MCP servers.
+# Software libraries, CLI tools and infrastructure platforms -- distinct from Claude skills/plugins/MCP servers.
 # Several items in the user's original list were classified here instead of skills.yaml because they are
 # standalone software for a future application, not Harness/Claude-session capabilities.
 tools:
