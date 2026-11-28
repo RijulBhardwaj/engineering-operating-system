@@ -36,8 +36,10 @@ again and a same-beat pulse waits for its pop-in; counters centre through GSAP; 
 safe output-name check. A second review round added: finite-number and range checks (speed > 0, hold >= 0, chart
 max/decimals), text-type checks for labels/titles/captions, shape checks for edges/draw/id lists, a caught render
 timeout, and message-specific tests. Not checked: whether a pulse/draw targets something currently visible (it still
-renders, just without a visible effect). Tests: `python -m pytest test_explainer.py` (27 pass). Both demos
-re-rendered and frame-checked.
+renders, just without a visible effect). A third round: exact-match id/colour/name patterns (no trailing newline),
+every `<` escaped in inline-script strings, the whole render process tree killed on timeout, type checks for voice,
+palette and list/object shapes. Tests: `python -m pytest test_explainer.py` (33 pass). Both demos re-rendered and
+frame-checked after each round.
 
 Known limits: math labels are plain Unicode, not LaTeX; no images, line charts or camera moves yet.
 HyperFrames' own agent skills are not installed (needs `npx skills add heygen-com/hyperframes`, run by the owner);

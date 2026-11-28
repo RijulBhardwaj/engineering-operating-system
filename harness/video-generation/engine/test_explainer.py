@@ -20,6 +20,12 @@ def test_examples_validate(example):
 @pytest.mark.parametrize("mutate,message", [
     (lambda s: s["counters"][0].update(id='a"b'), "may only use letters"),
     (lambda s: s["counters"][0].update(id="a_b"), "may only use letters"),
+    (lambda s: s["counters"][0].update(id="a\n"), "may only use letters"),
+    (lambda s: s["counters"][0].update(color="#ffffff\n"), "must be #rrggbb"),
+    (lambda s: s["counters"][0].update(size=0), "size must be > 0"),
+    (lambda s: s.update(voice=""), "voice must be"),
+    (lambda s: s.update(palette=[]), "palette must be an object"),
+    (lambda s: s["beats"].append("x"), "must be an object"),
     (lambda s: s["counters"][0].update(color="white"), "must be #rrggbb"),
     (lambda s: s.setdefault("palette", {}).update(bg="#fff"), "must be #rrggbb"),
     (lambda s: s["counters"][0].update(to="5"), "'to' must be a finite number"),
@@ -49,7 +55,9 @@ def test_bad_specs_rejected(mutate, message):
 
 
 def test_script_breakout_escaped():
-    assert "</script>" not in e.js_str("</script><b>")
+    for s in ("</script><b>", "<!--<script>"):
+        out = e.js_str(s)
+        assert "<" not in out and json.loads(out) == s  # same string for JS, no raw '<' for the HTML tokenizer
 
 
 def test_counter_and_chart_markup_escaped_and_animated():

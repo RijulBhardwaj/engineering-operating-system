@@ -8,7 +8,7 @@ Usage:
 Run with the Kokoro venv's python (CAT_Guide/video/tts-venv) -- it needs kokoro, numpy, soundfile.
 
 Spec shape (see examples/trig-hexagon.json):
-  {"title": str, "voice": "bf_emma", "speed": 1.2, "resolution": "portrait",
+  {"voice": "bf_emma", "speed": 1.2, "resolution": "portrait",
    "palette": {"bg": "#05080f", "title": "#f5c542", "caption": "#4fd1e8", "line": "#5b6b8c"},
    "nodes": [{"id": "sin", "label": "sin θ", "x": 0.37, "y": 0.24, "color": "#34d399"}],   # x,y = fraction of frame
    "edges": [["sin", "cos"]],
@@ -51,8 +51,8 @@ def tts(spec, out):
     pipe = KPipeline(lang_code=voice[0])  # 'a' American, 'b' British: first letter of the voice id
     parts, t, timing = [np.zeros(int(LEAD * SR), np.float32)], LEAD, []
     for b in spec["beats"]:
-        audio = np.concatenate([np.asarray(a, np.float32)
-                                for _, _, a in pipe(b["say"], voice=voice, speed=spec.get("speed", 1.2))])
+        chunks = [np.asarray(a, np.float32) for _, _, a in pipe(b["say"], voice=voice, speed=spec.get("speed", 1.2))]
+        audio = np.concatenate(chunks) if chunks else np.zeros(0, np.float32)
         if not len(audio):
             sys.exit(f"Kokoro produced no audio for beat {b['say'][:40]!r}")
         d = len(audio) / SR
@@ -66,28 +66,28 @@ def tts(spec, out):
 
 
 def js_str(s):
-    """JSON string safe inside an inline <script> (a '</script>' in a caption must not end the block)."""
-    return json.dumps(s).replace("</", "<\\/")
+    """JSON string safe inside an inline <script>: escaping every '<' covers both '</script>' and '<!--'."""
+    return json.dumps(s).replace("<", "\\u003c")
 
 
 def build_html(spec, timing, total, w, h):
     p = {"bg": "#05080f", "title": "#f5c542", "caption": "#4fd1e8", "line": "#5b6b8c", **spec.get("palette", {})}
-    spec.setdefault("nodes", [])  # nodes are optional: a chart- or counter-only video is valid
-    nodes = {n["id"]: n for n in spec["nodes"]}
+    node_list = spec.get("nodes", [])  # nodes are optional: a chart- or counter-only video is valid
+    nodes = {n["id"]: n for n in node_list}
     r = int(min(w, h) * 0.075)  # node radius
     edges_svg, nodes_html = [], []
     for a, b in spec.get("edges", []):
         A, B = nodes[a], nodes[b]
         edges_svg.append(f'<line id="e-{a}__{b}" class="edge" x1="{A["x"] * w:.0f}" y1="{A["y"] * h:.0f}" '
                          f'x2="{B["x"] * w:.0f}" y2="{B["y"] * h:.0f}"/>')
-    for n in spec["nodes"]:
+    for n in node_list:
         c = n.get("color", "#ffffff")
         nodes_html.append(
             f'<div id="n-{n["id"]}" class="node" style="left:{n["x"] * w - r:.0f}px;top:{n["y"] * h - r:.0f}px;'
             f'width:{2 * r}px;height:{2 * r}px;border-color:{c};color:{c};box-shadow:0 0 28px {c}55">'
             f'{html.escape(n["label"])}</div>')
 
-    sel = {n["id"]: f"#n-{n['id']}" for n in spec["nodes"]}
+    sel = {n["id"]: f"#n-{n['id']}" for n in node_list}
     extra_html = []
     for k in spec.get("counters", []):
         sel[k["id"]] = f"#k-{k['id']}"
@@ -261,11 +261,21 @@ def validate(spec):
         return v
 
     def colour(v, what):
-        if v is not None and not COLOUR.match(str(v)):
+        if v is not None and not (isinstance(v, str) and COLOUR.fullmatch(v)):
             fail(f"{what}: colour {v!r} must be #rrggbb")
 
+    if not isinstance(spec.get("palette", {}), dict):
+        fail("palette must be an object")
     for k, v in spec.get("palette", {}).items():
         colour(v, f"palette.{k}")
+    if not (isinstance(spec.get("voice", "bf_emma"), str) and spec.get("voice", "bf_emma")):
+        fail("voice must be a non-empty Kokoro voice id such as 'bf_emma'")
+    for group in ("nodes", "counters", "charts", "edges", "beats"):
+        if not isinstance(spec.get(group, []), list):
+            fail(f"{group} must be a list")
+    for el in spec.get("nodes", []) + spec.get("counters", []) + spec.get("charts", []) + spec.get("beats", []):
+        if not isinstance(el, dict):
+            fail(f"every node, counter, chart and beat must be an object, got {el!r:.40}")
     if spec.get("resolution", "portrait") not in SIZES:
         fail(f"resolution must be one of {sorted(SIZES)}")
     if num(spec, "speed", "spec", 1.2) <= 0:
@@ -276,7 +286,7 @@ def validate(spec):
                                 ("charts", charts, ("id", "x", "y", "w", "h", "bars"))):
         for el in spec.get(group, []):
             need(el, keys, group[:-1])
-            if not isinstance(el["id"], str) or not ID.match(el["id"]):
+            if not isinstance(el["id"], str) or not ID.fullmatch(el["id"]):
                 fail(f"id {el['id']!r} may only use letters, digits and '-'")
             for k in keys[1:]:
                 if k not in ("label", "bars"):
@@ -293,7 +303,8 @@ def validate(spec):
     ids = nodes | counters | charts
     for k in spec.get("counters", []):
         num(k, "from", "counter", 0)
-        num(k, "size", "counter", 0.16)
+        if num(k, "size", "counter", 0.16) <= 0:
+            fail(f"counter {k['id']!r}: size must be > 0")
         decimals(k, "counter")
     for ch in spec.get("charts", []):
         if not isinstance(ch["bars"], list) or not ch["bars"]:
@@ -340,7 +351,7 @@ def main():
     spec = json.loads(Path(a.spec).read_text(encoding="utf-8"))
     validate(spec)
     out = (Path(a.out) if a.out else HERE / "renders" / Path(a.spec).stem).resolve()
-    if not SAFE_NAME.match(out.name) or not out.name.strip("."):
+    if not SAFE_NAME.fullmatch(out.name) or not out.name.strip("."):
         sys.exit(f"output name {out.name!r} may only use letters, digits, '_', '.', '-'")
     out.mkdir(parents=True, exist_ok=True)
     w, h = SIZES[spec.get("resolution", "portrait")]
@@ -356,15 +367,21 @@ def main():
     mp4 = out / f"{out.name}.mp4"
     print("[engine] rendering (HyperFrames)", file=sys.stderr)
     # relative -o + captured output: an absolute path with spaces / inherited console made the CLI exit 1 on Windows
+    p = subprocess.Popen([shutil.which("npx") or "npx", "-y", HF, "render", "-o", mp4.name, "-q", "delivery",
+                          "--strict"], cwd=out, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                         encoding="utf-8", errors="replace")
     try:
-        r = subprocess.run([shutil.which("npx") or "npx", "-y", HF, "render", "-o", mp4.name, "-q", "delivery",
-                            "--strict"], cwd=out, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                           timeout=1800)
-    except subprocess.TimeoutExpired as e:
-        tail = (e.stdout or b"")[-2000:] if isinstance(e.stdout, bytes) else (e.stdout or "")[-2000:]
-        sys.exit(f"render timed out after 30 min:\n{tail}")
-    if r.returncode or not mp4.exists():
-        sys.exit(f"render failed ({r.returncode}):\n{r.stdout[-2000:]}\n{r.stderr[-2000:]}")
+        stdout, stderr = p.communicate(timeout=1800)
+    except subprocess.TimeoutExpired:
+        # npx.cmd -> node -> Chrome/ffmpeg: killing only the direct child leaves the tree holding the pipes
+        if sys.platform == "win32":
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(p.pid)], capture_output=True)
+        else:
+            p.kill()
+        stdout, stderr = p.communicate()
+        sys.exit(f"render timed out after 30 min:\n{stdout[-2000:]}\n{stderr[-2000:]}")
+    if p.returncode or not mp4.exists():
+        sys.exit(f"render failed ({p.returncode}):\n{stdout[-2000:]}\n{stderr[-2000:]}")
     print(mp4)
 
 
