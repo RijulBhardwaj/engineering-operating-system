@@ -373,8 +373,10 @@ def main():
     print("[engine] rendering (HyperFrames)", file=sys.stderr)
     # relative -o + captured output: an absolute path with spaces / inherited console made the CLI exit 1 on Windows
     p = subprocess.Popen([shutil.which("npx") or "npx", "-y", HF, "render", "-o", mp4.name, "-q", "delivery",
-                          "--strict"], cwd=out, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-                         encoding="utf-8", errors="replace")
+                          "--strict"], cwd=out, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # bytes in, decoded here: the CLI prints Unicode progress bars that the Windows console codepage cannot hold
+    def text(b):
+        return (b or b"").decode("utf-8", "replace")
     try:
         stdout, stderr = p.communicate(timeout=1800)
     except subprocess.TimeoutExpired:
@@ -386,10 +388,10 @@ def main():
         try:
             stdout, stderr = p.communicate(timeout=30)
         except subprocess.TimeoutExpired:  # a surviving grandchild still holds the pipes
-            stdout, stderr = "", ""
-        sys.exit(f"render timed out after 30 min:\n{stdout[-2000:]}\n{stderr[-2000:]}")
+            stdout, stderr = b"", b""
+        sys.exit(f"render timed out after 30 min:\n{text(stdout)[-2000:]}\n{text(stderr)[-2000:]}")
     if p.returncode or not mp4.exists():
-        sys.exit(f"render failed ({p.returncode}):\n{stdout[-2000:]}\n{stderr[-2000:]}")
+        sys.exit(f"render failed ({p.returncode}):\n{text(stdout)[-2000:]}\n{text(stderr)[-2000:]}")
     print(mp4)
 
 
