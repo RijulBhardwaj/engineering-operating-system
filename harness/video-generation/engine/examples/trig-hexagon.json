@@ -1,0 +1,34 @@
+{
+  "title": "Trig hexagon demo",
+  "voice": "bf_emma",
+  "speed": 1.15,
+  "resolution": "portrait",
+  "nodes": [
+    {"id": "sin", "label": "sin θ", "x": 0.37, "y": 0.29, "color": "#34d399"},
+    {"id": "cos", "label": "cos θ", "x": 0.63, "y": 0.29, "color": "#60a5fa"},
+    {"id": "tan", "label": "tan θ", "x": 0.24, "y": 0.41, "color": "#fb923c"},
+    {"id": "cot", "label": "cot θ", "x": 0.76, "y": 0.41, "color": "#22d3ee"},
+    {"id": "sec", "label": "sec θ", "x": 0.37, "y": 0.53, "color": "#a78bfa"},
+    {"id": "csc", "label": "csc θ", "x": 0.63, "y": 0.53, "color": "#f472b6"},
+    {"id": "one", "label": "1", "x": 0.5, "y": 0.41, "color": "#ffffff"}
+  ],
+  "edges": [["sin", "cos"], ["cos", "cot"], ["cot", "csc"], ["csc", "sec"], ["sec", "tan"], ["tan", "sin"],
+            ["sin", "csc"], ["cos", "sec"], ["tan", "cot"]],
+  "beats": [
+    {"say": "Six trig functions. One shape holds every relationship between them.",
+     "title": "ONE HEXAGON", "caption": "six functions, one picture"},
+    {"say": "Down the left: sine, tangent, secant.",
+     "title": "BUILD IT", "caption": "left side", "show": ["sin", "tan", "sec"]},
+    {"say": "Down the right, their co-functions: cosine, cotangent, cosecant.",
+     "caption": "right side: the CO- functions", "show": ["cos", "cot", "csc"],
+     "draw": [["sin", "cos"], ["cos", "cot"], ["cot", "csc"], ["csc", "sec"], ["sec", "tan"], ["tan", "sin"]]},
+    {"say": "And a one in the middle.", "caption": "1 in the centre", "show": ["one"]},
+    {"say": "Rule one. Opposite corners multiply to one.",
+     "title": "1. RECIPROCAL", "caption": "opposite corners multiply to 1",
+     "draw": [["sin", "csc"], ["cos", "sec"], ["tan", "cot"]]},
+    {"say": "Sine times cosecant is one.", "caption": "sin θ · csc θ = 1", "pulse": ["sin", "csc"]},
+    {"say": "Cosine times secant is one.", "caption": "cos θ · sec θ = 1", "pulse": ["cos", "sec"]},
+    {"say": "Tangent times cotangent is one. Three lines, six identities.",
+     "caption": "tan θ · cot θ = 1", "pulse": ["tan", "cot"], "hold": 0.4}
+  ]
+}

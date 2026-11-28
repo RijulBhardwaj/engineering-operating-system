@@ -1,0 +1,34 @@
+{
+  "title": "Reference pacing demo (real data from video-watch scene counts, 2026-11-28)",
+  "voice": "bf_emma",
+  "speed": 1.2,
+  "resolution": "portrait",
+  "counters": [
+    {"id": "videos", "x": 0.5, "y": 0.36, "to": 5, "label": "reference videos", "color": "#f5c542", "size": 0.2},
+    {"id": "calm", "x": 0.5, "y": 0.36, "to": 0.6, "decimals": 1, "label": "shots per minute", "color": "#34d399", "size": 0.2}
+  ],
+  "charts": [
+    {"id": "pace", "x": 0.08, "y": 0.25, "w": 0.84, "h": 0.36, "max": 16, "decimals": 1,
+     "bars": [
+       {"label": "Trig reel", "value": 0.6, "color": "#34d399"},
+       {"label": "AI reel", "value": 1.5, "color": "#22d3ee"},
+       {"label": "3D video", "value": 5.3, "color": "#a78bfa"},
+       {"label": "Launch", "value": 13.1, "color": "#60a5fa"},
+       {"label": "Design", "value": 15.0, "color": "#f472b6"}
+     ]}
+  ],
+  "beats": [
+    {"say": "I watched five reference videos, frame by frame.",
+     "title": "THE REFERENCES", "caption": "transcripts, scenes, keyframes", "count": ["videos"]},
+    {"say": "Then I counted how often each one cuts to a new shot.",
+     "caption": "shots per minute", "hide": ["videos"]},
+    {"say": "The fast design reel cuts fifteen times a minute. The launch video, thirteen.",
+     "title": "CUT RATE", "caption": "fast reels cut constantly", "grow": ["pace"], "hold": 0.6},
+    {"say": "The explainers barely cut at all.",
+     "caption": "explainers stay on one canvas", "pulse": ["pace"]},
+    {"say": "The trig reel holds one shot for almost the whole video.",
+     "title": "THE CALM ONE", "caption": "one continuous canvas", "hide": ["pace"], "count": ["calm"]},
+    {"say": "That is the style this engine copies. Build the picture once, then teach on top of it.",
+     "caption": "build once, teach on top", "pulse": ["calm"], "hold": 0.4}
+  ]
+}

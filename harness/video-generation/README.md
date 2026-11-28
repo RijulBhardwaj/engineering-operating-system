@@ -4,6 +4,8 @@ A generic, project-agnostic pipeline for making explainer/diagram videos: concep
 
 See also: [animation-styles.md](animation-styles.md) (which tool renders which named animation style), [brand-assets-template/](brand-assets-template/) (per-project colors/fonts/logo seed, copied in by `setup.sh`), [script-template.md](script-template.md) (stage 2 script structure + feedback loop), and [metrics.md](metrics.md) (per-run ledger + quality indicators to monitor).
 
+**Explainer engine (2026-11-28):** [engine/](engine/README.md) turns a spec JSON into a narrated vertical diagram explainer (Kokoro voice + HyperFrames render), verified on Windows. Reference-video findings and style rules: `docs/research_notes/video-references/PLAYBOOK.md`; watch any video with `video-watch`.
+
 ## Pipeline stages
 
 1. **Concept** -- what the video explains, for whom, how long.
